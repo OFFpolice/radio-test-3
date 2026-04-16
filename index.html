@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>WebRadioBot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #121212;
+            color: #ffffff;
+            line-height: 1.5;
+            -webkit-tap-highlight-color: transparent;
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        .app {
+            max-width: 500px;
+            margin: 0 auto;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            background: #121212;
+            position: relative;
+        }
+        .app-header {
+            padding-top: calc(var(--tg-content-safe-area-inset-top, 0px) + 0px);
+            padding-left: calc(var(--tg-content-safe-area-inset-left, 0px) + 16px);
+            padding-right: calc(var(--tg-content-safe-area-inset-right, 0px) + 16px);
+            padding-bottom: 8px;
+            background: #1e1e1e;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .app-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #c2185b, #e91e63);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        .search-wrapper {
+            margin: 8px 0 4px;
+            background: #2c2c2c;
+            border-radius: 28px;
+            padding: 4px 8px 4px 16px;
+            display: flex;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .search-wrapper i {
+            color: #9e9e9e;
+            margin-right: 8px;
+        }
+        .search-wrapper input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 16px;
+            font-family: 'Nunito', sans-serif;
+            width: 100%;
+            padding: 12px 0;
+        }
+        .search-wrapper input::placeholder {
+            color: #9e9e9e;
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 12px 12px;
+            scroll-behavior: smooth;
+        }
+        .stations-section {
+            margin-bottom: 8px;
+        }
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #e0e0e0;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .section-title i {
+            color: #c2185b;
+            font-size: 20px;
+        }
+        .station-card {
+            display: flex;
+            align-items: flex-start;
+            padding: 14px 16px;
+            background: #1e1e1e;
+            border-radius: 16px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255,255,255,0.03);
+            transition: background 0.2s, transform 0.1s;
+            cursor: pointer;
+        }
+        .station-card:active {
+            background: #2c2c2c;
+            transform: scale(0.99);
+        }
+        .station-card.active {
+            background: rgba(194, 24, 91, 0.15);
+            border-left: 4px solid #c2185b;
+            border-radius: 16px 8px 8px 16px;
+        }
+        .station-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: #2c2c2c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+        .station-icon i {
+            font-size: 28px;
+            color: #c2185b;
+        }
+        .station-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .station-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #ffffff;
+            margin-bottom: 4px;
+            line-height: 1.3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .station-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            color: #b0b0b0;
+            font-size: 12px;
+        }
+        .tag {
+            background: #2c2c2c;
+            color: #b0b0b0;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .station-card.active .tag {
+            background: #3a2a33;
+            color: #e0b0c0;
+        }
+        .favorite-btn {
+            background: transparent;
+            border: none;
+            color: #9e9e9e;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            margin-left: 8px;
+            flex-shrink: 0;
+            align-self: flex-start;
+        }
+        .favorite-btn i {
+            font-size: 22px;
+        }
+        .favorite-btn.active {
+            color: #e91e63;
+        }
+        .favorite-btn:active {
+            background: rgba(255,255,255,0.08);
+            transform: scale(0.9);
+        }
+        .loading-placeholder {
+            padding: 24px;
+            text-align: center;
+            color: #9e9e9e;
+        }
+        /* Компактный плеер — без регулятора громкости */
+        .player-bar {
+            padding: 10px 12px 6px;
+            padding-left: calc(var(--tg-content-safe-area-inset-left, 0px) + 12px);
+            padding-right: calc(var(--tg-content-safe-area-inset-right, 0px) + 12px);
+            background: #1e1e1e;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            flex-shrink: 0;
+        }
+        .now-playing {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        .now-playing i {
+            color: #c2185b;
+            font-size: 18px;
+        }
+        .now-playing-text {
+            flex: 1;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .player-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .play-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 22px;
+            background: #c2185b;
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 8px rgba(194,24,91,0.3);
+        }
+        .play-btn i {
+            font-size: 26px;
+        }
+        .play-btn:active {
+            transform: scale(0.92);
+            box-shadow: 0 2px 4px rgba(194,24,91,0.4);
+        }
+        .status-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: #b0b0b0;
+            font-size: 11px;
+            margin-top: 6px;
+        }
+        .status-badge i {
+            font-size: 14px;
+        }
+        .bottom-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            background: #1a1a1a;
+            padding: 6px 8px calc(var(--tg-content-safe-area-inset-bottom, 0px) + 6px);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            flex-shrink: 0;
+        }
+        .nav-item {
+            background: none;
+            border: none;
+            color: #888;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 30px;
+            transition: all 0.15s;
+            flex: 1;
+            max-width: 100px;
+        }
+        .nav-item i {
+            font-size: 22px;
+        }
+        .nav-item.active {
+            color: #e91e63;
+            background: rgba(233, 30, 99, 0.1);
+        }
+        .about-container {
+            padding: 24px 16px;
+            text-align: center;
+        }
+        .about-icon {
+            font-size: 64px;
+            color: #c2185b;
+            margin-bottom: 16px;
+        }
+        .about-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .about-text {
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+        .content::-webkit-scrollbar {
+            width: 4px;
+        }
+        .content::-webkit-scrollbar-thumb {
+            background: #c2185b;
+            border-radius: 4px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Кнопка "Наверх" теперь выше плеера */
+        .scroll-to-top {
+            position: fixed;
+            bottom: calc(100px + var(--tg-content-safe-area-inset-bottom, 0px));
+            right: max(20px, calc(20px + var(--tg-content-safe-area-inset-right, 0px)));
+            width: 48px;
+            height: 48px;
+            border-radius: 24px;
+            background: #c2185b;
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s, transform 0.2s;
+            z-index: 30;
+        }
+        .scroll-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .scroll-to-top i {
+            font-size: 28px;
+        }
+        .scroll-to-top:active {
+            transform: scale(0.9);
+            background: #ad1457;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app" id="app">
+    <header class="app-header" id="appHeader">
+        <h1>WebRadioBot</h1>
+        <div class="search-wrapper" id="searchWrapper">
+            <i class="material-icons">search</i>
+            <input type="text" id="searchInput" placeholder="Поиск станций..." autocomplete="off">
+        </div>
+    </header>
+
+    <div class="content" id="dynamicContent">
+    </div>
+
+    <!-- Компактный плеер без регулятора громкости -->
+    <div class="player-bar" id="playerBar">
+        <div class="now-playing">
+            <i class="material-icons">graphic_eq</i>
+            <span class="now-playing-text" id="currentStationName">Выберите станцию</span>
+        </div>
+        <div class="player-controls">
+            <button class="play-btn" id="playBtn">
+                <i class="material-icons">play_arrow</i>
+            </button>
+        </div>
+        <div class="status-badge" id="statusArea">
+            <i class="material-icons" id="statusIcon">circle</i>
+            <span id="statusText">Ожидание</span>
+        </div>
+    </div>
+
+    <div class="bottom-nav" id="bottomNav">
+        <button class="nav-item active" data-tab="radio" id="navRadio">
+            <i class="material-icons">radio</i>
+            <span>Радио</span>
+        </button>
+        <button class="nav-item" data-tab="favorites" id="navFavorites">
+            <i class="material-icons">favorite</i>
+            <span>Избранное</span>
+        </button>
+        <button class="nav-item" data-tab="about" id="navAbout">
+            <i class="material-icons">info</i>
+            <span>О нас</span>
+        </button>
+    </div>
+</div>
+
+<button class="scroll-to-top" id="scrollToTopBtn" title="Наверх">
+    <i class="material-icons">arrow_upward</i>
+</button>
+
+<audio id="audioPlayer"></audio>
+
+<script>
+    (function() {
+        "use strict";
+
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            if (tg.isVersionAtLeast("8.0")) tg.requestFullscreen();
+            tg.enableClosingConfirmation();
+            tg.disableVerticalSwipes();
+            tg.lockOrientation();
+        }
+
+        const audio = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const statusText = document.getElementById('statusText');
+        const statusIcon = document.getElementById('statusIcon');
+        const currentStationNameEl = document.getElementById('currentStationName');
+        const searchInput = document.getElementById('searchInput');
+        const searchWrapper = document.getElementById('searchWrapper');
+        const dynamicContent = document.getElementById('dynamicContent');
+        const bottomNav = document.getElementById('bottomNav');
+        const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+
+        const navRadio = document.getElementById('navRadio');
+        const navFavorites = document.getElementById('navFavorites');
+        const navAbout = document.getElementById('navAbout');
+        const navItems = [navRadio, navFavorites, navAbout];
+
+        let stations = [];
+        let selectedStation = null;
+        let currentServer = 'https://de1.api.radio-browser.info';
+        let isLoading = false;
+        let hasMore = true;
+        let currentOffset = 0;
+        const LIMIT = 100;
+        let currentSearchQuery = '';
+        let activeTab = 'radio';
+        let favorites = [];
+
+        // ========== Telegram Back Button ==========
+        const backButton = tg?.BackButton;
+        if (backButton) {
+            backButton.onClick(() => {
+                // Если не на главной вкладке — возвращаемся на Радио
+                if (activeTab !== 'radio') {
+                    switchTab('radio');
+                }
+                // На главной вкладке кнопка скрыта, поэтому стандартное поведение — закрытие приложения
+            });
+        }
+
+        // ========== Работа с избранным ==========
+        function loadFavoritesFromStorage() {
+            try {
+                const stored = localStorage.getItem('webradio_favorites');
+                if (stored) {
+                    favorites = JSON.parse(stored);
+                } else {
+                    favorites = [];
+                }
+            } catch (e) {
+                favorites = [];
+            }
+        }
+        function saveFavoritesToStorage() {
+            localStorage.setItem('webradio_favorites', JSON.stringify(favorites));
+        }
+
+        function isFavorite(station) {
+            if (!station || !station.url_resolved) return false;
+            return favorites.some(fav => fav.url_resolved === station.url_resolved);
+        }
+
+        function toggleFavorite(station) {
+            if (!station || !station.url_resolved) return;
+            const index = favorites.findIndex(fav => fav.url_resolved === station.url_resolved);
+            if (index === -1) {
+                favorites.push({ 
+                    name: station.name, 
+                    url_resolved: station.url_resolved,
+                    tags: station.tags || '',
+                    favicon: station.favicon || ''
+                });
+            } else {
+                favorites.splice(index, 1);
+            }
+            saveFavoritesToStorage();
+
+            if (activeTab === 'favorites') {
+                renderFavorites();
+            } else if (activeTab === 'radio') {
+                renderRadioList();
+            }
+        }
+
+        function setStatus(text, icon = 'circle', spin = false) {
+            statusText.textContent = text;
+            statusIcon.textContent = icon;
+            statusIcon.style.animation = spin ? 'spin 1s linear infinite' : '';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // ========== Рендеринг списков (новая структура: кнопка избранного в одной строке с названием) ==========
+        function renderRadioList() {
+            if (!stations.length && !isLoading) {
+                dynamicContent.innerHTML = `<div class="loading-placeholder"><i class="material-icons">search_off</i> Ничего не найдено</div>`;
+                return;
+            }
+            let html = `<div class="stations-section"><div class="section-title"><i class="material-icons">radio</i><span>Все радиостанции</span></div><div id="stationsList">`;
+
+            stations.forEach(station => {
+                const isActive = selectedStation && selectedStation.url_resolved === station.url_resolved;
+                const favActive = isFavorite(station);
+                const tags = station.tags ? station.tags.split(',').slice(0,3).map(t=>t.trim()) : [];
+                const tagHtml = tags.length ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('') : '<span class="tag">radio</span>';
+                html += `
+                    <div class="station-card ${isActive ? 'active' : ''}" data-url="${station.url_resolved}" data-name="${escapeHtml(station.name)}">
+                        <div class="station-icon"><i class="material-icons">radio</i></div>
+                        <div class="station-info">
+                            <div class="station-name">${escapeHtml(station.name) || 'Без названия'}</div>
+                            <div class="station-tags">${tagHtml}</div>
+                        </div>
+                        <button class="favorite-btn ${favActive ? 'active' : ''}" data-url="${station.url_resolved}" data-name="${escapeHtml(station.name)}" data-tags="${escapeHtml(station.tags || '')}">
+                            <i class="material-icons">${favActive ? 'favorite' : 'favorite_border'}</i>
+                        </button>
+                    </div>
+                `;
+            });
+
+            if (hasMore) {
+                html += `<div id="load-more-indicator" class="loading-placeholder"><i class="material-icons">sync</i> Загрузка...</div>`;
+            }
+            html += `</div></div>`;
+            dynamicContent.innerHTML = html;
+
+            document.querySelectorAll('.station-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.favorite-btn')) return;
+                    const url = card.dataset.url;
+                    const name = card.dataset.name;
+                    selectStation(url, name);
+                });
+            });
+            document.querySelectorAll('.favorite-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const url = btn.dataset.url;
+                    const name = btn.dataset.name;
+                    const tags = btn.dataset.tags;
+                    const station = stations.find(s => s.url_resolved === url) || { url_resolved: url, name, tags };
+                    toggleFavorite(station);
+                    const isFav = isFavorite(station);
+                    btn.innerHTML = `<i class="material-icons">${isFav ? 'favorite' : 'favorite_border'}</i>`;
+                    btn.classList.toggle('active', isFav);
+                });
+            });
+        }
+
+        function renderFavorites() {
+            if (favorites.length === 0) {
+                dynamicContent.innerHTML = `<div class="loading-placeholder" style="margin-top:40px;"><i class="material-icons">favorite_border</i><br>Нет избранных станций</div>`;
+                return;
+            }
+            let html = `<div class="stations-section"><div class="section-title"><i class="material-icons">favorite</i><span>Избранное</span></div><div id="favoritesList">`;
+            favorites.forEach(station => {
+                const isActive = selectedStation && selectedStation.url_resolved === station.url_resolved;
+                const tags = station.tags ? station.tags.split(',').slice(0,3).map(t=>t.trim()) : [];
+                const tagHtml = tags.length ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('') : '<span class="tag">radio</span>';
+                html += `
+                    <div class="station-card ${isActive ? 'active' : ''}" data-url="${station.url_resolved}" data-name="${escapeHtml(station.name)}">
+                        <div class="station-icon"><i class="material-icons">radio</i></div>
+                        <div class="station-info">
+                            <div class="station-name">${escapeHtml(station.name) || 'Без названия'}</div>
+                            <div class="station-tags">${tagHtml}</div>
+                        </div>
+                        <button class="favorite-btn active" data-url="${station.url_resolved}" data-name="${escapeHtml(station.name)}" data-tags="${escapeHtml(station.tags || '')}">
+                            <i class="material-icons">favorite</i>
+                        </button>
+                    </div>
+                `;
+            });
+            html += `</div></div>`;
+            dynamicContent.innerHTML = html;
+
+            document.querySelectorAll('.station-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('.favorite-btn')) return;
+                    selectStation(card.dataset.url, card.dataset.name);
+                });
+            });
+            document.querySelectorAll('.favorite-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const url = btn.dataset.url;
+                    const name = btn.dataset.name;
+                    const tags = btn.dataset.tags;
+                    const station = { url_resolved: url, name, tags };
+                    toggleFavorite(station);
+                    renderFavorites();
+                });
+            });
+        }
+
+        function renderAbout() {
+            dynamicContent.innerHTML = `
+                <div class="about-container">
+                    <i class="material-icons about-icon">radio</i>
+                    <div class="about-title">WebRadioBot</div>
+                    <div class="about-text">Слушайте тысячи радиостанций со всего мира. Добавляйте любимые в избранное.</div>
+                    <div class="about-text" style="font-size:13px; opacity:0.7;">Версия: 0.0.0.0.3 · Telegram Mini App</div>
+                </div>
+            `;
+        }
+
+        function selectStation(url, name) {
+            if (!url) return;
+            selectedStation = { url_resolved: url, name: name };
+            currentStationNameEl.textContent = name || 'Неизвестная станция';
+
+            document.querySelectorAll('.station-card').forEach(card => {
+                card.classList.remove('active');
+                if (card.dataset.url === url) card.classList.add('active');
+            });
+
+            localStorage.setItem('webradio_last_url', url);
+            localStorage.setItem('webradio_last_name', name);
+
+            const wasPlaying = !audio.paused;
+            if (wasPlaying) audio.pause();
+            audio.src = url;
+            audio.load();
+
+            if (wasPlaying) {
+                audio.play().catch(() => setStatus('Ошибка воспроизведения', 'error'));
+            } else {
+                setStatus('Готово', 'check_circle');
+            }
+            updatePlayButton(false);
+        }
+
+        function updatePlayButton(playing) {
+            playBtn.innerHTML = playing ? '<i class="material-icons">pause</i>' : '<i class="material-icons">play_arrow</i>';
+        }
+
+        async function fetchStations(reset = false, query = '') {
+            if (isLoading) return;
+            if (!hasMore && !reset) return;
+
+            isLoading = true;
+            if (reset) {
+                currentOffset = 0;
+                hasMore = true;
+                stations = [];
+                setStatus('Загрузка...', 'sync', true);
+            } else {
+                const indicator = document.getElementById('load-more-indicator');
+                if (!indicator) {
+                    const list = document.getElementById('stationsList');
+                    if (list) {
+                        const loader = document.createElement('div');
+                        loader.id = 'load-more-indicator';
+                        loader.className = 'loading-placeholder';
+                        loader.innerHTML = '<i class="material-icons">sync</i> Загрузка...';
+                        list.appendChild(loader);
+                    }
+                }
+            }
+
+            try {
+                const serverRes = await fetch('https://all.api.radio-browser.info/json/servers');
+                const servers = await serverRes.json();
+                const randomServer = servers[Math.floor(Math.random() * servers.length)];
+                currentServer = `https://${randomServer.name}`;
+
+                let url;
+                if (query.trim()) {
+                    url = `${currentServer}/json/stations/search?name=${encodeURIComponent(query)}&limit=${LIMIT}&offset=${currentOffset}`;
+                } else {
+                    url = `${currentServer}/json/stations/search?limit=${LIMIT}&offset=${currentOffset}&order=votes&reverse=true`;
+                }
+
+                const res = await fetch(url);
+                const data = await res.json();
+                const validStations = data.filter(s => s.url_resolved && s.name);
+
+                if (reset) {
+                    stations = validStations;
+                } else {
+                    stations = [...stations, ...validStations];
+                }
+
+                currentOffset += validStations.length;
+                hasMore = validStations.length === LIMIT;
+
+                if (activeTab === 'radio') {
+                    renderRadioList();
+                }
+
+                if (reset && stations.length && !localStorage.getItem('webradio_last_url')) {
+                    selectStation(stations[0].url_resolved, stations[0].name);
+                } else if (reset && stations.length) {
+                    const savedUrl = localStorage.getItem('webradio_last_url');
+                    const savedName = localStorage.getItem('webradio_last_name');
+                    if (savedUrl && stations.some(s => s.url_resolved === savedUrl)) {
+                        selectStation(savedUrl, savedName || 'Станция');
+                    }
+                }
+
+                setStatus(`Загружено станций: ${stations.length}`, 'check_circle');
+                if (!hasMore && stations.length) setStatus('Все станции загружены', 'done_all');
+            } catch (err) {
+                console.error(err);
+                if (reset) dynamicContent.innerHTML = `<div class="loading-placeholder">Ошибка загрузки</div>`;
+                setStatus('Ошибка сети', 'error');
+            } finally {
+                isLoading = false;
+                const loader = document.getElementById('load-more-indicator');
+                if (loader) loader.remove();
+            }
+        }
+
+        // ========== Переключение вкладок с поддержкой BackButton ==========
+        function switchTab(tabId) {
+            activeTab = tabId;
+            navItems.forEach(item => {
+                const isActive = item.dataset.tab === tabId;
+                item.classList.toggle('active', isActive);
+            });
+
+            // Управление видимостью поиска
+            if (tabId === 'radio') {
+                searchWrapper.style.display = 'flex';
+                if (stations.length === 0) {
+                    fetchStations(true, currentSearchQuery);
+                } else {
+                    renderRadioList();
+                }
+            } else {
+                searchWrapper.style.display = 'none';
+                if (tabId === 'favorites') {
+                    renderFavorites();
+                } else if (tabId === 'about') {
+                    renderAbout();
+                }
+            }
+
+            // Прокрутка в начало
+            dynamicContent.scrollTop = 0;
+            toggleScrollToTopButton();
+
+            // Управление кнопкой "Назад" Telegram
+            if (backButton) {
+                if (tabId === 'radio') {
+                    backButton.hide();
+                } else {
+                    backButton.show();
+                }
+            }
+        }
+
+        // ========== Скролл и подгрузка ==========
+        function handleContentScroll() {
+            toggleScrollToTopButton();
+            
+            // Бесконечная подгрузка только на вкладке Радио
+            if (activeTab !== 'radio') return;
+            
+            const { scrollTop, scrollHeight, clientHeight } = dynamicContent;
+            if (scrollHeight - scrollTop - clientHeight < 200 && !isLoading && hasMore) {
+                fetchStations(false, currentSearchQuery);
+            }
+        }
+
+        function toggleScrollToTopButton() {
+            if (dynamicContent.scrollTop > 300) {
+                scrollToTopBtn.classList.add('visible');
+            } else {
+                scrollToTopBtn.classList.remove('visible');
+            }
+        }
+
+        function scrollToTop() {
+            dynamicContent.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ========== Инициализация ==========
+        function init() {
+            loadFavoritesFromStorage();
+            
+            // Восстановление последней станции
+            const lastUrl = localStorage.getItem('webradio_last_url');
+            const lastName = localStorage.getItem('webradio_last_name');
+            if (lastUrl) {
+                selectedStation = { url_resolved: lastUrl, name: lastName || 'Станция' };
+                currentStationNameEl.textContent = lastName || 'Станция';
+                audio.src = lastUrl;
+            }
+
+            navRadio.addEventListener('click', () => switchTab('radio'));
+            navFavorites.addEventListener('click', () => switchTab('favorites'));
+            navAbout.addEventListener('click', () => switchTab('about'));
+
+            // Стартовая вкладка
+            switchTab('radio');
+
+            dynamicContent.addEventListener('scroll', handleContentScroll);
+
+            let searchTimeout;
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentSearchQuery = query;
+                    if (activeTab === 'radio') {
+                        fetchStations(true, query);
+                    }
+                }, 500);
+            });
+
+            playBtn.addEventListener('click', togglePlay);
+            
+            // Громкость по умолчанию 0.7 (без UI)
+            audio.volume = 0.7;
+
+            audio.addEventListener('playing', () => { updatePlayButton(true); setStatus('Играет', 'volume_up'); });
+            audio.addEventListener('pause', () => { updatePlayButton(false); setStatus('Пауза', 'pause_circle'); });
+            audio.addEventListener('waiting', () => { setStatus('Буферизация...', 'sync', true); });
+            audio.addEventListener('error', () => { setStatus('Ошибка потока', 'error'); updatePlayButton(false); });
+
+            scrollToTopBtn.addEventListener('click', scrollToTop);
+        }
+
+        function togglePlay() {
+            if (!selectedStation) {
+                setStatus('Выберите станцию', 'info');
+                return;
+            }
+            if (audio.paused) {
+                if (audio.src !== selectedStation.url_resolved) {
+                    audio.src = selectedStation.url_resolved;
+                    audio.load();
+                }
+                audio.play().catch(() => setStatus('Ошибка', 'error'));
+            } else {
+                audio.pause();
+            }
+        }
+
+        init();
+    })();
+</script>
+</body>
+</html>
