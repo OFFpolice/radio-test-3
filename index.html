@@ -10,33 +10,70 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --app-header-height: auto;
-            --player-bar-height: auto;
-            --bottom-nav-height: auto;
-        }
-
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            -webkit-tap-highlight-color: transparent;
+        }
+
+        /*
+         * ─────────────────────────────────────────────────────────────────
+         * VIEWPORT & SAFE AREA STRATEGY
+         * ─────────────────────────────────────────────────────────────────
+         *
+         * --tg-viewport-height          — текущая высота вьюпорта Telegram
+         *                                 (меняется при появлении клавиатуры)
+         * --tg-viewport-stable-height   — стабильная высота без клавиатуры
+         *
+         * --tg-safe-area-inset-*        — безопасные отступы от краёв
+         *                                 ФИЗИЧЕСКОГО экрана (notch, home bar)
+         *                                 Применяем к самым крайним элементам.
+         *
+         * --tg-content-safe-area-inset-* — безопасные отступы от краёв
+         *                                  области КОНТЕНТА внутри Telegram
+         *                                  (учитывает шапку Telegram, кнопки бота).
+         *                                  Применяем к контентным блокам.
+         *
+         * Правило:
+         *   - Фон / оболочка (.app) — растягиваем на safe-area (физический экран)
+         *   - Контент (.app-header, .bottom-nav, .player-bar) — content-safe-area
+         * ─────────────────────────────────────────────────────────────────
+         */
+
+        :root {
+            /* Fallback-значения на случай если переменные TG ещё не установлены */
+            --tg-safe-area-inset-top: 0px;
+            --tg-safe-area-inset-bottom: 0px;
+            --tg-safe-area-inset-left: 0px;
+            --tg-safe-area-inset-right: 0px;
+
+            --tg-content-safe-area-inset-top: 0px;
+            --tg-content-safe-area-inset-bottom: 0px;
+            --tg-content-safe-area-inset-left: 0px;
+            --tg-content-safe-area-inset-right: 0px;
+
+            --tg-viewport-height: 100vh;
+            --tg-viewport-stable-height: 100vh;
         }
 
         html, body {
-            height: var(--tg-viewport-height, 100vh);
+            /* Убираем scroll у body — скроллить будет только .content */
             overflow: hidden;
+            height: 100%;
+            width: 100%;
+            background: #0e0e0e;
         }
 
         body {
             font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #121212;
             color: #ffffff;
             line-height: 1.5;
-            margin: 0;
-            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            /* Запрещаем pull-to-refresh и оверскролл */
+            overscroll-behavior: none;
         }
 
+        /* ─── LOADING SCREEN ─── */
         #loadingScreen {
             position: fixed;
             inset: 0;
@@ -48,6 +85,11 @@
             justify-content: center;
             gap: 0;
             transition: opacity 0.5s ease, visibility 0.5s ease;
+            /* Loading screen занимает весь физический экран */
+            padding-top: var(--tg-safe-area-inset-top);
+            padding-bottom: var(--tg-safe-area-inset-bottom);
+            padding-left: var(--tg-safe-area-inset-left);
+            padding-right: var(--tg-safe-area-inset-right);
         }
         #loadingScreen.hidden {
             opacity: 0;
@@ -119,7 +161,6 @@
             margin-bottom: 40px;
             letter-spacing: 0.3px;
         }
-
         .loader-equalizer {
             display: flex;
             align-items: flex-end;
@@ -144,7 +185,6 @@
             0%, 100% { height: 5px; }
             50% { height: var(--h, 20px); }
         }
-
         .loader-progress-wrap {
             width: 200px;
             height: 3px;
@@ -168,22 +208,36 @@
             letter-spacing: 0.5px;
         }
 
+        /* ─── APP SHELL ─── */
+        /*
+         * .app занимает высоту вьюпорта Telegram (--tg-viewport-stable-height).
+         * Используем stable, чтобы layout не прыгал при появлении клавиатуры.
+         * Горизонтальные отступы от физического экрана (safe-area) применяем здесь,
+         * чтобы фон закрашивал notch-области.
+         */
         .app {
             max-width: 500px;
             margin: 0 auto;
-            height: var(--tg-viewport-height, 100vh);
+            height: var(--tg-viewport-stable-height, 100dvh);
             display: flex;
             flex-direction: column;
             background: #121212;
             position: relative;
-            padding-left: var(--tg-safe-area-inset-left, 0px);
-            padding-right: var(--tg-safe-area-inset-right, 0px);
+            /* Компенсируем физические края экрана у оболочки */
+            padding-left: var(--tg-safe-area-inset-left);
+            padding-right: var(--tg-safe-area-inset-right);
         }
 
+        /* ─── HEADER ─── */
+        /*
+         * padding-top = content-safe-area-inset-top (шапка Telegram)
+         *             + дополнительный внутренний отступ
+         * Горизонтальные отступы берём из content-safe-area (контентная область).
+         */
         .app-header {
-            padding-top: calc(var(--tg-content-safe-area-inset-top, 0px) + 8px);
-            padding-left: calc(var(--tg-content-safe-area-inset-left, 0px) + 16px);
-            padding-right: calc(var(--tg-content-safe-area-inset-right, 0px) + 16px);
+            padding-top: calc(var(--tg-content-safe-area-inset-top) + 8px);
+            padding-left: calc(var(--tg-content-safe-area-inset-left) + 16px);
+            padding-right: calc(var(--tg-content-safe-area-inset-right) + 16px);
             padding-bottom: 8px;
             background: #1e1e1e;
             border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -210,10 +264,7 @@
             align-items: center;
             border: 1px solid rgba(255,255,255,0.08);
         }
-        .search-wrapper i {
-            color: #9e9e9e;
-            margin-right: 8px;
-        }
+        .search-wrapper i { color: #9e9e9e; margin-right: 8px; }
         .search-wrapper input {
             background: transparent;
             border: none;
@@ -224,23 +275,92 @@
             width: 100%;
             padding: 12px 0;
         }
-        .search-wrapper input::placeholder {
-            color: #9e9e9e;
-        }
+        .search-wrapper input::placeholder { color: #9e9e9e; }
 
+        /* ─── CONTENT (scrollable area) ─── */
+        /*
+         * Горизонтальные отступы от content-safe-area,
+         * чтобы контент не уходил под боковые элементы Telegram UI.
+         */
         .content {
             flex: 1;
             overflow-y: auto;
-            padding: 8px 12px 12px;
-            padding-left: calc(var(--tg-content-safe-area-inset-left, 0px) + 12px);
-            padding-right: calc(var(--tg-content-safe-area-inset-right, 0px) + 12px);
+            overflow-x: hidden;
+            padding: 8px calc(var(--tg-content-safe-area-inset-right) + 12px) 12px calc(var(--tg-content-safe-area-inset-left) + 12px);
             scroll-behavior: smooth;
+            overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
         }
+        .content::-webkit-scrollbar { width: 4px; }
+        .content::-webkit-scrollbar-thumb { background: #c2185b; border-radius: 4px; }
 
-        .stations-section {
-            margin-bottom: 8px;
+        /* ─── PLAYER BAR ─── */
+        /*
+         * Горизонтальные отступы — content-safe-area.
+         * Нижний отступ не нужен здесь, он будет в bottom-nav.
+         */
+        .player-bar {
+            padding-top: 8px;
+            padding-bottom: 8px;
+            padding-left: calc(var(--tg-content-safe-area-inset-left) + 12px);
+            padding-right: calc(var(--tg-content-safe-area-inset-right) + 12px);
+            background: #1e1e1e;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
+
+        /* ─── BOTTOM NAV ─── */
+        /*
+         * padding-bottom = content-safe-area-inset-bottom (кнопки Telegram внизу)
+         *                + safe-area-inset-bottom (home indicator устройства)
+         * Берём максимум: если content-safe уже включает физический отступ — хорошо,
+         * если нет — safe-area добавит своё. На практике используем сложение,
+         * и Telegram гарантирует корректные значения.
+         *
+         * Горизонтальные: content-safe-area-inset-left/right.
+         */
+        .bottom-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            background: #1a1a1a;
+            padding-top: 6px;
+            padding-bottom: calc(var(--tg-content-safe-area-inset-bottom) + var(--tg-safe-area-inset-bottom) + 6px);
+            padding-left: calc(var(--tg-content-safe-area-inset-left) + 8px);
+            padding-right: calc(var(--tg-content-safe-area-inset-right) + 8px);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            flex-shrink: 0;
+        }
+        .nav-item {
+            background: none;
+            border: none;
+            color: #888;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 30px;
+            transition: all 0.15s;
+            flex: 1;
+            max-width: 100px;
+        }
+        .nav-item i { font-size: 22px; }
+        .nav-item.active {
+            color: #e91e63;
+            background: rgba(233, 30, 99, 0.1);
+        }
+
+        /* ─── STATION CARDS ─── */
+        .stations-section { margin-bottom: 8px; }
         .section-title {
             display: flex;
             align-items: center;
@@ -252,10 +372,7 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .section-title i {
-            color: #c2185b;
-            font-size: 20px;
-        }
+        .section-title i { color: #c2185b; font-size: 20px; }
 
         .station-card {
             display: flex;
@@ -267,7 +384,6 @@
             border: 1px solid rgba(255,255,255,0.03);
             transition: background 0.2s, transform 0.1s;
             cursor: pointer;
-            user-select: none;
         }
         .station-card:active {
             background: #2c2c2c;
@@ -300,12 +416,8 @@
             display: block;
             transition: opacity 0.3s ease;
         }
-        .station-cover img.loading {
-            opacity: 0;
-        }
-        .station-cover img.loaded {
-            opacity: 1;
-        }
+        .station-cover img.loading { opacity: 0; }
+        .station-cover img.loaded { opacity: 1; }
         .station-cover .cover-fallback {
             position: absolute;
             inset: 0;
@@ -316,11 +428,7 @@
             z-index: 0;
             pointer-events: none;
         }
-        .station-cover .cover-fallback i {
-            font-size: 28px;
-            color: #c2185b;
-        }
-
+        .station-cover .cover-fallback i { font-size: 28px; color: #c2185b; }
         .station-card.active .station-cover::after {
             content: '';
             position: absolute;
@@ -335,10 +443,7 @@
             50% { border-color: rgba(233,30,99,0.2); }
         }
 
-        .station-info {
-            flex: 1;
-            min-width: 0;
-        }
+        .station-info { flex: 1; min-width: 0; }
         .station-name {
             font-weight: 600;
             font-size: 15px;
@@ -349,13 +454,7 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .station-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            color: #b0b0b0;
-            font-size: 12px;
-        }
+        .station-tags { display: flex; flex-wrap: wrap; gap: 4px; color: #b0b0b0; font-size: 12px; }
         .tag {
             background: #2c2c2c;
             color: #b0b0b0;
@@ -365,10 +464,8 @@
             font-weight: 500;
             white-space: nowrap;
         }
-        .station-card.active .tag {
-            background: #3a2a33;
-            color: #e0b0c0;
-        }
+        .station-card.active .tag { background: #3a2a33; color: #e0b0c0; }
+
         .favorite-btn {
             background: transparent;
             border: none;
@@ -385,35 +482,11 @@
             flex-shrink: 0;
             align-self: flex-start;
         }
-        .favorite-btn i {
-            font-size: 22px;
-        }
-        .favorite-btn.active {
-            color: #e91e63;
-        }
-        .favorite-btn:active {
-            background: rgba(255,255,255,0.08);
-            transform: scale(0.9);
-        }
-        .loading-placeholder {
-            padding: 24px;
-            text-align: center;
-            color: #9e9e9e;
-        }
+        .favorite-btn i { font-size: 22px; }
+        .favorite-btn.active { color: #e91e63; }
+        .favorite-btn:active { background: rgba(255,255,255,0.08); transform: scale(0.9); }
 
-        .player-bar {
-            padding: 8px 12px;
-            padding-left: calc(var(--tg-content-safe-area-inset-left, 0px) + 12px);
-            padding-right: calc(var(--tg-content-safe-area-inset-right, 0px) + 12px);
-            background: #1e1e1e;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
+        /* ─── PLAYER ─── */
         .play-btn {
             width: 40px;
             height: 40px;
@@ -429,13 +502,8 @@
             box-shadow: 0 4px 8px rgba(194,24,91,0.3);
             flex-shrink: 0;
         }
-        .play-btn i {
-            font-size: 24px;
-        }
-        .play-btn:active {
-            transform: scale(0.92);
-            box-shadow: 0 2px 4px rgba(194,24,91,0.4);
-        }
+        .play-btn i { font-size: 24px; }
+        .play-btn:active { transform: scale(0.92); box-shadow: 0 2px 4px rgba(194,24,91,0.4); }
         .now-playing-text {
             flex: 1;
             font-weight: 600;
@@ -453,77 +521,40 @@
             font-size: 12px;
             flex-shrink: 0;
         }
-        .status-badge i {
-            font-size: 16px;
-        }
+        .status-badge i { font-size: 16px; }
 
-        .bottom-nav {
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            background: #1a1a1a;
-            padding-top: 6px;
-            padding-bottom: calc(var(--tg-content-safe-area-inset-bottom, 0px) + 6px);
-            padding-left: var(--tg-safe-area-inset-left, 0px);
-            padding-right: var(--tg-safe-area-inset-right, 0px);
-            border-top: 1px solid rgba(255,255,255,0.05);
-            flex-shrink: 0;
-        }
-        .nav-item {
-            background: none;
-            border: none;
-            color: #888;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            font-family: 'Nunito', sans-serif;
-            font-size: 11px;
-            font-weight: 500;
-            cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 30px;
-            transition: all 0.15s;
-            flex: 1;
-            max-width: 100px;
-        }
-        .nav-item i { font-size: 22px; }
-        .nav-item.active {
-            color: #e91e63;
-            background: rgba(233, 30, 99, 0.1);
-        }
-
-        .about-container {
-            padding: 24px 16px;
+        /* ─── MISC ─── */
+        .loading-placeholder {
+            padding: 24px;
             text-align: center;
+            color: #9e9e9e;
         }
-        .about-icon {
-            font-size: 64px;
-            color: #c2185b;
-            margin-bottom: 16px;
-        }
-        .about-title {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
-        .about-text {
-            color: #ccc;
-            margin-bottom: 20px;
-        }
-
-        .content::-webkit-scrollbar { width: 4px; }
-        .content::-webkit-scrollbar-thumb { background: #c2185b; border-radius: 4px; }
+        .about-container { padding: 24px 16px; text-align: center; }
+        .about-icon { font-size: 64px; color: #c2185b; margin-bottom: 16px; }
+        .about-title { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+        .about-text { color: #ccc; margin-bottom: 20px; }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
 
+        /* ─── SCROLL TO TOP ─── */
+        /*
+         * Позиционируем кнопку учитывая нижние панели:
+         * player-bar (~57px) + bottom-nav (~52px + content-safe-area-bottom + safe-area-bottom)
+         * + небольшой зазор.
+         */
         .scroll-to-top {
             position: fixed;
-            bottom: calc(var(--tg-content-safe-area-inset-bottom, 0px) + 130px);
-            right: calc(var(--tg-content-safe-area-inset-right, 0px) + max(20px, var(--tg-safe-area-inset-right, 20px)));
+            bottom: calc(
+                57px
+                + 52px
+                + var(--tg-content-safe-area-inset-bottom)
+                + var(--tg-safe-area-inset-bottom)
+                + 12px
+            );
+            right: calc(var(--tg-safe-area-inset-right) + var(--tg-content-safe-area-inset-right) + 16px);
             width: 48px;
             height: 48px;
             border-radius: 24px;
@@ -547,6 +578,7 @@
 </head>
 <body>
 
+<!-- LOADING SCREEN -->
 <div id="loadingScreen">
     <div class="loader-logo">
         <div class="loader-logo-ring2"></div>
@@ -571,6 +603,7 @@
     <div class="loader-progress-text" id="loaderProgressText">Подключение...</div>
 </div>
 
+<!-- APP -->
 <div class="app" id="app">
     <header class="app-header" id="appHeader">
         <h1>WebRadioBot</h1>
@@ -616,48 +649,162 @@
 <audio id="audioPlayer"></audio>
 
 <script>
-(function() {
+(function () {
     "use strict";
 
+    /* ═══════════════════════════════════════════════════════════════
+     * 1. TELEGRAM WEB APP INIT
+     * ═══════════════════════════════════════════════════════════════ */
     const tg = window.Telegram?.WebApp;
+
     if (tg) {
         tg.ready();
         tg.expand();
-        if (tg.isVersionAtLeast("8.0")) tg.requestFullscreen();
+
+        /* Полноэкранный режим — Bot API 8.0+ */
+        if (tg.isVersionAtLeast('8.0')) {
+            tg.requestFullscreen();
+        }
+
         tg.enableClosingConfirmation();
         tg.disableVerticalSwipes();
-        tg.lockOrientation();
-    }
 
-    const haptic = tg?.HapticFeedback || null;
-
-    function triggerHaptic(type, style) {
-        if (!haptic) return;
-        if (type === 'impact') {
-            haptic.impactOccurred(style || 'medium');
-        } else if (type === 'notification') {
-            haptic.notificationOccurred(style || 'success');
-        } else if (type === 'selection') {
-            haptic.selectionChanged();
+        /* Блокировка ориентации — Bot API 8.0+ */
+        if (tg.isVersionAtLeast('8.0')) {
+            tg.lockOrientation();
         }
     }
 
-    const loadingScreen = document.getElementById('loadingScreen');
-    const loaderProgress = document.getElementById('loaderProgress');
+    /* ═══════════════════════════════════════════════════════════════
+     * 2. HAPTIC FEEDBACK HELPER
+     * ═══════════════════════════════════════════════════════════════
+     *
+     * Telegram HapticFeedback API:
+     *
+     *   impactOccurred(style)
+     *     'light'   — лёгкое касание (навигация, выбор элемента)
+     *     'medium'  — среднее (toggle, выбор станции)
+     *     'heavy'   — тяжёлое (важное действие)
+     *     'rigid'   — жёсткое (ошибка, отказ)
+     *     'soft'    — мягкое
+     *
+     *   notificationOccurred(type)
+     *     'success' — успешное завершение
+     *     'warning' — предупреждение
+     *     'error'   — ошибка
+     *
+     *   selectionChanged()
+     *     — смена выбора в списке (скролл пикера и т.п.)
+     * ═══════════════════════════════════════════════════════════════ */
+    const haptic = {
+        impact(style = 'light') {
+            try { tg?.HapticFeedback?.impactOccurred(style); } catch (e) {}
+        },
+        notification(type = 'success') {
+            try { tg?.HapticFeedback?.notificationOccurred(type); } catch (e) {}
+        },
+        selection() {
+            try { tg?.HapticFeedback?.selectionChanged(); } catch (e) {}
+        }
+    };
+
+    /* ═══════════════════════════════════════════════════════════════
+     * 3. VIEWPORT HEIGHT — применяем к .app
+     * ═══════════════════════════════════════════════════════════════
+     *
+     * Telegram предоставляет CSS-переменные автоматически, но нам нужно
+     * обновлять высоту .app при изменении вьюпорта (например, клавиатура).
+     * Используем stable-height для layout, чтобы не прыгать.
+     * ═══════════════════════════════════════════════════════════════ */
+    const appEl = document.getElementById('app');
+
+    function applyViewportHeight() {
+        /*
+         * viewportStableHeight доступен через tg.viewportStableHeight (число px).
+         * CSS-переменная --tg-viewport-stable-height тоже должна выставляться
+         * Telegram автоматически, но для надёжности дублируем через JS.
+         */
+        if (tg) {
+            const stableH = tg.viewportStableHeight;
+            if (stableH && stableH > 0) {
+                appEl.style.height = stableH + 'px';
+                document.documentElement.style.setProperty('--tg-viewport-stable-height', stableH + 'px');
+            }
+            const currentH = tg.viewportHeight;
+            if (currentH && currentH > 0) {
+                document.documentElement.style.setProperty('--tg-viewport-height', currentH + 'px');
+            }
+        }
+    }
+
+    /* Слушаем изменения вьюпорта (появление клавиатуры и т.п.) */
+    if (tg) {
+        tg.onEvent('viewportChanged', ({ isStateStable }) => {
+            applyViewportHeight();
+        });
+    }
+
+    applyViewportHeight();
+
+    /* ═══════════════════════════════════════════════════════════════
+     * 4. SAFE AREA — применяем значения из tg к CSS-переменным
+     * ═══════════════════════════════════════════════════════════════
+     *
+     * Telegram выставляет CSS-переменные автоматически начиная с
+     * Bot API 7.x, но для совместимости с более старыми версиями
+     * дублируем через JS из JS-объектов.
+     *
+     * safeAreaInset      — физические края экрана
+     * contentSafeAreaInset — края контентной зоны внутри Telegram UI
+     * ═══════════════════════════════════════════════════════════════ */
+    function applySafeAreaInsets() {
+        if (!tg) return;
+        const root = document.documentElement;
+
+        /* safeAreaInset — физический экран (notch, home bar) */
+        const sa = tg.safeAreaInset;
+        if (sa) {
+            root.style.setProperty('--tg-safe-area-inset-top',    (sa.top    ?? 0) + 'px');
+            root.style.setProperty('--tg-safe-area-inset-bottom', (sa.bottom ?? 0) + 'px');
+            root.style.setProperty('--tg-safe-area-inset-left',   (sa.left   ?? 0) + 'px');
+            root.style.setProperty('--tg-safe-area-inset-right',  (sa.right  ?? 0) + 'px');
+        }
+
+        /* contentSafeAreaInset — контентная зона (шапка Telegram, кнопки) */
+        const csa = tg.contentSafeAreaInset;
+        if (csa) {
+            root.style.setProperty('--tg-content-safe-area-inset-top',    (csa.top    ?? 0) + 'px');
+            root.style.setProperty('--tg-content-safe-area-inset-bottom', (csa.bottom ?? 0) + 'px');
+            root.style.setProperty('--tg-content-safe-area-inset-left',   (csa.left   ?? 0) + 'px');
+            root.style.setProperty('--tg-content-safe-area-inset-right',  (csa.right  ?? 0) + 'px');
+        }
+    }
+
+    applySafeAreaInsets();
+
+    /* Safe area может обновиться после ready/expand/fullscreen */
+    if (tg) {
+        tg.onEvent('safeAreaChanged', applySafeAreaInsets);
+        tg.onEvent('contentSafeAreaChanged', applySafeAreaInsets);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+     * 5. LOADING SCREEN
+     * ═══════════════════════════════════════════════════════════════ */
+    const loadingScreen    = document.getElementById('loadingScreen');
+    const loaderProgress   = document.getElementById('loaderProgress');
     const loaderProgressText = document.getElementById('loaderProgressText');
-    let loadProgress = 0;
 
     function setLoadProgress(pct, text) {
-        loadProgress = pct;
         loaderProgress.style.width = pct + '%';
         if (text) loaderProgressText.textContent = text;
     }
 
     function hideLoadingScreen() {
         setLoadProgress(100, 'Готово!');
-        triggerHaptic('notification', 'success');
         setTimeout(() => {
             loadingScreen.classList.add('hidden');
+            haptic.notification('success'); /* Вибрация: загрузка завершена */
         }, 400);
     }
 
@@ -665,45 +812,49 @@
     setTimeout(() => setLoadProgress(30, 'Загрузка ресурсов...'), 300);
     setTimeout(() => setLoadProgress(55, 'Подключение к серверу...'), 700);
 
-    const audio = document.getElementById('audioPlayer');
-    const playBtn = document.getElementById('playBtn');
-    const statusText = document.getElementById('statusText');
-    const statusIcon = document.getElementById('statusIcon');
+    /* ═══════════════════════════════════════════════════════════════
+     * 6. APP STATE
+     * ═══════════════════════════════════════════════════════════════ */
+    const audio               = document.getElementById('audioPlayer');
+    const playBtn             = document.getElementById('playBtn');
+    const statusText          = document.getElementById('statusText');
+    const statusIcon          = document.getElementById('statusIcon');
     const currentStationNameEl = document.getElementById('currentStationName');
-    const searchInput = document.getElementById('searchInput');
-    const searchWrapper = document.getElementById('searchWrapper');
-    const dynamicContent = document.getElementById('dynamicContent');
-    const bottomNav = document.getElementById('bottomNav');
-    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+    const searchInput         = document.getElementById('searchInput');
+    const searchWrapper       = document.getElementById('searchWrapper');
+    const dynamicContent      = document.getElementById('dynamicContent');
+    const scrollToTopBtn      = document.getElementById('scrollToTopBtn');
 
-    const navRadio = document.getElementById('navRadio');
+    const navRadio     = document.getElementById('navRadio');
     const navFavorites = document.getElementById('navFavorites');
-    const navAbout = document.getElementById('navAbout');
-    const navItems = [navRadio, navFavorites, navAbout];
+    const navAbout     = document.getElementById('navAbout');
+    const navItems     = [navRadio, navFavorites, navAbout];
 
-    let stations = [];
-    let selectedStation = null;
-    let currentServer = 'https://de1.api.radio-browser.info';
-    let isLoading = false;
-    let hasMore = true;
-    let currentOffset = 0;
-    const LIMIT = 100;
+    let stations           = [];
+    let selectedStation    = null;
+    let currentServer      = 'https://de1.api.radio-browser.info';
+    let isLoading          = false;
+    let hasMore            = true;
+    let currentOffset      = 0;
+    const LIMIT            = 100;
     let currentSearchQuery = '';
-    let activeTab = 'radio';
-    let favorites = [];
+    let activeTab          = 'radio';
+    let favorites          = [];
 
     audio.volume = 1.0;
 
+    /* ── Back Button ── */
     const backButton = tg?.BackButton;
     if (backButton) {
         backButton.onClick(() => {
-            if (activeTab !== 'radio') {
-                triggerHaptic('selection');
-                switchTab('radio');
-            }
+            haptic.impact('light');
+            if (activeTab !== 'radio') switchTab('radio');
         });
     }
 
+    /* ═══════════════════════════════════════════════════════════════
+     * 7. FAVORITES — localStorage
+     * ═══════════════════════════════════════════════════════════════ */
     function loadFavoritesFromStorage() {
         try {
             const stored = localStorage.getItem('webradio_favorites');
@@ -727,22 +878,28 @@
                 tags: station.tags || '',
                 favicon: station.favicon || ''
             });
-            triggerHaptic('notification', 'success');
+            haptic.impact('medium'); /* Добавлено в избранное */
         } else {
             favorites.splice(index, 1);
-            triggerHaptic('notification', 'warning');
+            haptic.impact('light'); /* Убрано из избранного */
         }
         saveFavoritesToStorage();
         if (activeTab === 'favorites') renderFavorites();
         else if (activeTab === 'radio') renderRadioList();
     }
 
+    /* ═══════════════════════════════════════════════════════════════
+     * 8. STATUS
+     * ═══════════════════════════════════════════════════════════════ */
     function setStatus(text, icon = 'circle', spin = false) {
         statusText.textContent = text;
         statusIcon.textContent = icon;
         statusIcon.style.animation = spin ? 'spin 1s linear infinite' : '';
     }
 
+    /* ═══════════════════════════════════════════════════════════════
+     * 9. HTML HELPERS
+     * ═══════════════════════════════════════════════════════════════ */
     function escapeHtml(text) {
         if (!text) return '';
         return String(text)
@@ -761,6 +918,9 @@
             </div>`;
     }
 
+    /* ═══════════════════════════════════════════════════════════════
+     * 10. RENDER
+     * ═══════════════════════════════════════════════════════════════ */
     function renderRadioList() {
         if (!stations.length && !isLoading) {
             dynamicContent.innerHTML = `<div class="loading-placeholder"><i class="material-icons">search_off</i> Ничего не найдено</div>`;
@@ -771,8 +931,10 @@
         stations.forEach(station => {
             const isActive = selectedStation && selectedStation.url_resolved === station.url_resolved;
             const favActive = isFavorite(station);
-            const tags = station.tags ? station.tags.split(',').slice(0,3).map(t => t.trim()) : [];
-            const tagHtml = tags.length ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('') : '<span class="tag">radio</span>';
+            const tags = station.tags ? station.tags.split(',').slice(0, 3).map(t => t.trim()) : [];
+            const tagHtml = tags.length
+                ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')
+                : '<span class="tag">radio</span>';
 
             html += `
                 <div class="station-card ${isActive ? 'active' : ''}" data-url="${escapeHtml(station.url_resolved)}" data-name="${escapeHtml(station.name)}">
@@ -781,7 +943,11 @@
                         <div class="station-name">${escapeHtml(station.name) || 'Без названия'}</div>
                         <div class="station-tags">${tagHtml}</div>
                     </div>
-                    <button class="favorite-btn ${favActive ? 'active' : ''}" data-url="${escapeHtml(station.url_resolved)}" data-name="${escapeHtml(station.name)}" data-tags="${escapeHtml(station.tags || '')}" data-favicon="${escapeHtml(station.favicon || '')}">
+                    <button class="favorite-btn ${favActive ? 'active' : ''}"
+                        data-url="${escapeHtml(station.url_resolved)}"
+                        data-name="${escapeHtml(station.name)}"
+                        data-tags="${escapeHtml(station.tags || '')}"
+                        data-favicon="${escapeHtml(station.favicon || '')}">
                         <i class="material-icons">${favActive ? 'favorite' : 'favorite_border'}</i>
                     </button>
                 </div>`;
@@ -804,8 +970,10 @@
 
         favorites.forEach(station => {
             const isActive = selectedStation && selectedStation.url_resolved === station.url_resolved;
-            const tags = station.tags ? station.tags.split(',').slice(0,3).map(t => t.trim()) : [];
-            const tagHtml = tags.length ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('') : '<span class="tag">radio</span>';
+            const tags = station.tags ? station.tags.split(',').slice(0, 3).map(t => t.trim()) : [];
+            const tagHtml = tags.length
+                ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')
+                : '<span class="tag">radio</span>';
 
             html += `
                 <div class="station-card ${isActive ? 'active' : ''}" data-url="${escapeHtml(station.url_resolved)}" data-name="${escapeHtml(station.name)}">
@@ -814,7 +982,11 @@
                         <div class="station-name">${escapeHtml(station.name) || 'Без названия'}</div>
                         <div class="station-tags">${tagHtml}</div>
                     </div>
-                    <button class="favorite-btn active" data-url="${escapeHtml(station.url_resolved)}" data-name="${escapeHtml(station.name)}" data-tags="${escapeHtml(station.tags || '')}" data-favicon="${escapeHtml(station.favicon || '')}">
+                    <button class="favorite-btn active"
+                        data-url="${escapeHtml(station.url_resolved)}"
+                        data-name="${escapeHtml(station.name)}"
+                        data-tags="${escapeHtml(station.tags || '')}"
+                        data-favicon="${escapeHtml(station.favicon || '')}">
                         <i class="material-icons">favorite</i>
                     </button>
                 </div>`;
@@ -828,13 +1000,14 @@
         document.querySelectorAll('.station-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.favorite-btn')) return;
-                triggerHaptic('impact', 'light');
                 const url = card.dataset.url;
                 const name = card.dataset.name;
                 const station = stationList.find(s => s.url_resolved === url);
+                haptic.impact('medium'); /* Выбор станции */
                 selectStation(url, name, station?.favicon || '');
             });
         });
+
         document.querySelectorAll('.favorite-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -862,6 +1035,9 @@
             </div>`;
     }
 
+    /* ═══════════════════════════════════════════════════════════════
+     * 11. STATION SELECTION & PLAYBACK
+     * ═══════════════════════════════════════════════════════════════ */
     function selectStation(url, name, favicon) {
         if (!url) return;
         selectedStation = { url_resolved: url, name, favicon: favicon || '' };
@@ -884,7 +1060,7 @@
         if (wasPlaying) {
             audio.play().catch(() => {
                 setStatus('Ошибка воспроизведения', 'error');
-                triggerHaptic('notification', 'error');
+                haptic.notification('error');
             });
         } else {
             setStatus('Готово', 'check_circle');
@@ -898,16 +1074,43 @@
             : '<i class="material-icons">play_arrow</i>';
     }
 
+    function togglePlay() {
+        if (!selectedStation) {
+            setStatus('Выберите станцию', 'info');
+            haptic.notification('warning');
+            return;
+        }
+        if (audio.paused) {
+            if (audio.src !== selectedStation.url_resolved) {
+                audio.src = selectedStation.url_resolved;
+                audio.load();
+            }
+            haptic.impact('medium'); /* Play */
+            audio.play().catch(() => {
+                setStatus('Ошибка', 'error');
+                haptic.notification('error');
+            });
+        } else {
+            haptic.impact('light'); /* Pause */
+            audio.pause();
+        }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+     * 12. FETCH STATIONS
+     * ═══════════════════════════════════════════════════════════════ */
     async function fetchStations(reset = false, query = '') {
         if (isLoading) return;
         if (!hasMore && !reset) return;
 
         isLoading = true;
+
         if (reset) {
             currentOffset = 0;
             hasMore = true;
             stations = [];
         } else {
+            /* Добавляем индикатор подгрузки если ещё нет */
             const indicator = document.getElementById('load-more-indicator');
             if (!indicator) {
                 const list = document.getElementById('stationsList');
@@ -949,8 +1152,8 @@
             if (activeTab === 'radio') renderRadioList();
 
             if (reset && stations.length) {
-                const savedUrl = localStorage.getItem('webradio_last_url');
-                const savedName = localStorage.getItem('webradio_last_name');
+                const savedUrl    = localStorage.getItem('webradio_last_url');
+                const savedName   = localStorage.getItem('webradio_last_name');
                 const savedFavicon = localStorage.getItem('webradio_last_favicon') || '';
                 if (savedUrl) {
                     selectStation(savedUrl, savedName || 'Станция', savedFavicon);
@@ -973,6 +1176,7 @@
                 hideLoadingScreen();
             }
             setStatus('Ошибка сети', 'error');
+            haptic.notification('error');
         } finally {
             isLoading = false;
             const loader = document.getElementById('load-more-indicator');
@@ -980,9 +1184,11 @@
         }
     }
 
+    /* ═══════════════════════════════════════════════════════════════
+     * 13. TAB SWITCHING
+     * ═══════════════════════════════════════════════════════════════ */
     function switchTab(tabId) {
         activeTab = tabId;
-        triggerHaptic('selection');
         navItems.forEach(item => item.classList.toggle('active', item.dataset.tab === tabId));
 
         if (tabId === 'radio') {
@@ -1004,6 +1210,9 @@
         }
     }
 
+    /* ═══════════════════════════════════════════════════════════════
+     * 14. SCROLL
+     * ═══════════════════════════════════════════════════════════════ */
     function handleContentScroll() {
         toggleScrollToTopButton();
         if (activeTab !== 'radio') return;
@@ -1017,32 +1226,15 @@
         scrollToTopBtn.classList.toggle('visible', dynamicContent.scrollTop > 300);
     }
 
-    function togglePlay() {
-        if (!selectedStation) {
-            setStatus('Выберите станцию', 'info');
-            triggerHaptic('notification', 'warning');
-            return;
-        }
-        triggerHaptic('impact', 'medium');
-        if (audio.paused) {
-            if (audio.src !== selectedStation.url_resolved) {
-                audio.src = selectedStation.url_resolved;
-                audio.load();
-            }
-            audio.play().catch(() => {
-                setStatus('Ошибка', 'error');
-                triggerHaptic('notification', 'error');
-            });
-        } else {
-            audio.pause();
-        }
-    }
-
+    /* ═══════════════════════════════════════════════════════════════
+     * 15. INIT
+     * ═══════════════════════════════════════════════════════════════ */
     function init() {
         loadFavoritesFromStorage();
 
-        const lastUrl = localStorage.getItem('webradio_last_url');
-        const lastName = localStorage.getItem('webradio_last_name');
+        /* Восстанавливаем последнюю станцию */
+        const lastUrl    = localStorage.getItem('webradio_last_url');
+        const lastName   = localStorage.getItem('webradio_last_name');
         const lastFavicon = localStorage.getItem('webradio_last_favicon') || '';
         if (lastUrl) {
             selectedStation = { url_resolved: lastUrl, name: lastName || 'Станция', favicon: lastFavicon };
@@ -1050,14 +1242,26 @@
             audio.src = lastUrl;
         }
 
-        navRadio.addEventListener('click', () => switchTab('radio'));
-        navFavorites.addEventListener('click', () => switchTab('favorites'));
-        navAbout.addEventListener('click', () => switchTab('about'));
+        /* Nav */
+        navRadio.addEventListener('click', () => {
+            haptic.impact('light');
+            switchTab('radio');
+        });
+        navFavorites.addEventListener('click', () => {
+            haptic.impact('light');
+            switchTab('favorites');
+        });
+        navAbout.addEventListener('click', () => {
+            haptic.impact('light');
+            switchTab('about');
+        });
 
         switchTab('radio');
 
+        /* Scroll */
         dynamicContent.addEventListener('scroll', handleContentScroll);
 
+        /* Search */
         let searchTimeout;
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.trim();
@@ -1068,42 +1272,33 @@
             }, 500);
         });
 
+        /* Player */
         playBtn.addEventListener('click', togglePlay);
+
+        /* Scroll to top */
         scrollToTopBtn.addEventListener('click', () => {
-            triggerHaptic('impact', 'light');
+            haptic.impact('light');
             dynamicContent.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
+        /* Audio events */
         audio.addEventListener('playing', () => {
             updatePlayButton(true);
             setStatus('Играет', 'volume_up');
-            triggerHaptic('notification', 'success');
+            haptic.notification('success'); /* Воспроизведение началось */
         });
         audio.addEventListener('pause', () => {
             updatePlayButton(false);
             setStatus('Пауза', 'pause_circle');
         });
-        audio.addEventListener('waiting', () => setStatus('Буферизация...', 'sync', true));
+        audio.addEventListener('waiting', () => {
+            setStatus('Буферизация...', 'sync', true);
+        });
         audio.addEventListener('error', () => {
             setStatus('Ошибка потока', 'error');
             updatePlayButton(false);
-            triggerHaptic('notification', 'error');
+            haptic.notification('error'); /* Ошибка потока */
         });
-
-        // Обработка изменения видимой области viewport (например, при появлении клавиатуры)
-        if (tg) {
-            tg.onEvent('viewportChanged', (evt) => {
-                if (evt?.is_state_stable) {
-                    document.documentElement.style.setProperty('--tg-viewport-height', tg.viewportStableHeight + 'px');
-                } else {
-                    document.documentElement.style.setProperty('--tg-viewport-height', tg.viewportHeight + 'px');
-                }
-            });
-
-            // Устанавливаем начальные значения viewport
-            document.documentElement.style.setProperty('--tg-viewport-height', tg.viewportHeight + 'px');
-            document.documentElement.style.setProperty('--tg-viewport-stable-height', tg.viewportStableHeight + 'px');
-        }
     }
 
     init();
