@@ -15,33 +15,7 @@
             margin: 0;
             padding: 0;
         }
-
-        /*
-         * ─────────────────────────────────────────────────────────────────
-         * VIEWPORT & SAFE AREA STRATEGY
-         * ─────────────────────────────────────────────────────────────────
-         *
-         * --tg-viewport-height          — текущая высота вьюпорта Telegram
-         *                                 (меняется при появлении клавиатуры)
-         * --tg-viewport-stable-height   — стабильная высота без клавиатуры
-         *
-         * --tg-safe-area-inset-*        — безопасные отступы от краёв
-         *                                 ФИЗИЧЕСКОГО экрана (notch, home bar)
-         *                                 Применяем к самым крайним элементам.
-         *
-         * --tg-content-safe-area-inset-* — безопасные отступы от краёв
-         *                                  области КОНТЕНТА внутри Telegram
-         *                                  (учитывает шапку Telegram, кнопки бота).
-         *                                  Применяем к контентным блокам.
-         *
-         * Правило:
-         *   - Фон / оболочка (.app) — растягиваем на safe-area (физический экран)
-         *   - Контент (.app-header, .bottom-nav, .player-bar) — content-safe-area
-         * ─────────────────────────────────────────────────────────────────
-         */
-
         :root {
-            /* Fallback-значения на случай если переменные TG ещё не установлены */
             --tg-safe-area-inset-top: 0px;
             --tg-safe-area-inset-bottom: 0px;
             --tg-safe-area-inset-left: 0px;
@@ -55,25 +29,19 @@
             --tg-viewport-height: 100vh;
             --tg-viewport-stable-height: 100vh;
         }
-
         html, body {
-            /* Убираем scroll у body — скроллить будет только .content */
             overflow: hidden;
             height: 100%;
             width: 100%;
             background: #0e0e0e;
         }
-
         body {
             font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
             color: #ffffff;
             line-height: 1.5;
             -webkit-tap-highlight-color: transparent;
-            /* Запрещаем pull-to-refresh и оверскролл */
             overscroll-behavior: none;
         }
-
-        /* ─── LOADING SCREEN ─── */
         #loadingScreen {
             position: fixed;
             inset: 0;
@@ -85,7 +53,6 @@
             justify-content: center;
             gap: 0;
             transition: opacity 0.5s ease, visibility 0.5s ease;
-            /* Loading screen занимает весь физический экран */
             padding-top: var(--tg-safe-area-inset-top);
             padding-bottom: var(--tg-safe-area-inset-bottom);
             padding-left: var(--tg-safe-area-inset-left);
@@ -96,7 +63,6 @@
             visibility: hidden;
             pointer-events: none;
         }
-
         .loader-logo {
             position: relative;
             width: 96px;
@@ -143,7 +109,6 @@
             0% { opacity: 1; transform: scale(1); }
             100% { opacity: 0; transform: scale(1.5); }
         }
-
         .loader-title {
             font-size: 26px;
             font-weight: 800;
@@ -207,14 +172,6 @@
             font-weight: 600;
             letter-spacing: 0.5px;
         }
-
-        /* ─── APP SHELL ─── */
-        /*
-         * .app занимает высоту вьюпорта Telegram (--tg-viewport-stable-height).
-         * Используем stable, чтобы layout не прыгал при появлении клавиатуры.
-         * Горизонтальные отступы от физического экрана (safe-area) применяем здесь,
-         * чтобы фон закрашивал notch-области.
-         */
         .app {
             max-width: 500px;
             margin: 0 auto;
@@ -223,17 +180,9 @@
             flex-direction: column;
             background: #121212;
             position: relative;
-            /* Компенсируем физические края экрана у оболочки */
             padding-left: var(--tg-safe-area-inset-left);
             padding-right: var(--tg-safe-area-inset-right);
         }
-
-        /* ─── HEADER ─── */
-        /*
-         * padding-top = content-safe-area-inset-top (шапка Telegram)
-         *             + дополнительный внутренний отступ
-         * Горизонтальные отступы берём из content-safe-area (контентная область).
-         */
         .app-header {
             padding-top: calc(var(--tg-content-safe-area-inset-top) + 8px);
             padding-left: calc(var(--tg-content-safe-area-inset-left) + 16px);
@@ -276,12 +225,6 @@
             padding: 12px 0;
         }
         .search-wrapper input::placeholder { color: #9e9e9e; }
-
-        /* ─── CONTENT (scrollable area) ─── */
-        /*
-         * Горизонтальные отступы от content-safe-area,
-         * чтобы контент не уходил под боковые элементы Telegram UI.
-         */
         .content {
             flex: 1;
             overflow-y: auto;
@@ -293,12 +236,6 @@
         }
         .content::-webkit-scrollbar { width: 4px; }
         .content::-webkit-scrollbar-thumb { background: #c2185b; border-radius: 4px; }
-
-        /* ─── PLAYER BAR ─── */
-        /*
-         * Горизонтальные отступы — content-safe-area.
-         * Нижний отступ не нужен здесь, он будет в bottom-nav.
-         */
         .player-bar {
             padding-top: 8px;
             padding-bottom: 8px;
@@ -312,17 +249,6 @@
             align-items: center;
             gap: 12px;
         }
-
-        /* ─── BOTTOM NAV ─── */
-        /*
-         * padding-bottom = content-safe-area-inset-bottom (кнопки Telegram внизу)
-         *                + safe-area-inset-bottom (home indicator устройства)
-         * Берём максимум: если content-safe уже включает физический отступ — хорошо,
-         * если нет — safe-area добавит своё. На практике используем сложение,
-         * и Telegram гарантирует корректные значения.
-         *
-         * Горизонтальные: content-safe-area-inset-left/right.
-         */
         .bottom-nav {
             display: flex;
             align-items: center;
@@ -358,8 +284,6 @@
             color: #e91e63;
             background: rgba(233, 30, 99, 0.1);
         }
-
-        /* ─── STATION CARDS ─── */
         .stations-section { margin-bottom: 8px; }
         .section-title {
             display: flex;
@@ -373,7 +297,6 @@
             letter-spacing: 0.5px;
         }
         .section-title i { color: #c2185b; font-size: 20px; }
-
         .station-card {
             display: flex;
             align-items: flex-start;
@@ -394,7 +317,6 @@
             border-left: 4px solid #c2185b;
             border-radius: 16px 8px 8px 16px;
         }
-
         .station-cover {
             width: 52px;
             height: 52px;
@@ -442,7 +364,6 @@
             0%, 100% { border-color: rgba(233,30,99,0.6); }
             50% { border-color: rgba(233,30,99,0.2); }
         }
-
         .station-info { flex: 1; min-width: 0; }
         .station-name {
             font-weight: 600;
@@ -465,7 +386,6 @@
             white-space: nowrap;
         }
         .station-card.active .tag { background: #3a2a33; color: #e0b0c0; }
-
         .favorite-btn {
             background: transparent;
             border: none;
@@ -485,8 +405,6 @@
         .favorite-btn i { font-size: 22px; }
         .favorite-btn.active { color: #e91e63; }
         .favorite-btn:active { background: rgba(255,255,255,0.08); transform: scale(0.9); }
-
-        /* ─── PLAYER ─── */
         .play-btn {
             width: 40px;
             height: 40px;
@@ -522,8 +440,6 @@
             flex-shrink: 0;
         }
         .status-badge i { font-size: 16px; }
-
-        /* ─── MISC ─── */
         .loading-placeholder {
             padding: 24px;
             text-align: center;
@@ -533,18 +449,10 @@
         .about-icon { font-size: 64px; color: #c2185b; margin-bottom: 16px; }
         .about-title { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
         .about-text { color: #ccc; margin-bottom: 20px; }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        /* ─── SCROLL TO TOP ─── */
-        /*
-         * Позиционируем кнопку учитывая нижние панели:
-         * player-bar (~57px) + bottom-nav (~52px + content-safe-area-bottom + safe-area-bottom)
-         * + небольшой зазор.
-         */
         .scroll-to-top {
             position: fixed;
             bottom: calc(
@@ -577,8 +485,6 @@
     </style>
 </head>
 <body>
-
-<!-- LOADING SCREEN -->
 <div id="loadingScreen">
     <div class="loader-logo">
         <div class="loader-logo-ring2"></div>
@@ -602,8 +508,6 @@
     </div>
     <div class="loader-progress-text" id="loaderProgressText">Подключение...</div>
 </div>
-
-<!-- APP -->
 <div class="app" id="app">
     <header class="app-header" id="appHeader">
         <h1>WebRadioBot</h1>
@@ -612,9 +516,7 @@
             <input type="text" id="searchInput" placeholder="Поиск станций..." autocomplete="off">
         </div>
     </header>
-
     <div class="content" id="dynamicContent"></div>
-
     <div class="player-bar" id="playerBar">
         <button class="play-btn" id="playBtn">
             <i class="material-icons">play_arrow</i>
@@ -625,7 +527,6 @@
             <span id="statusText">Ожидание</span>
         </div>
     </div>
-
     <div class="bottom-nav" id="bottomNav">
         <button class="nav-item active" data-tab="radio" id="navRadio">
             <i class="material-icons">radio</i>
@@ -641,61 +542,29 @@
         </button>
     </div>
 </div>
-
 <button class="scroll-to-top" id="scrollToTopBtn" title="Наверх">
     <i class="material-icons">arrow_upward</i>
 </button>
-
 <audio id="audioPlayer"></audio>
 
 <script>
 (function () {
     "use strict";
 
-    /* ═══════════════════════════════════════════════════════════════
-     * 1. TELEGRAM WEB APP INIT
-     * ═══════════════════════════════════════════════════════════════ */
     const tg = window.Telegram?.WebApp;
 
     if (tg) {
         tg.ready();
         tg.expand();
-
-        /* Полноэкранный режим — Bot API 8.0+ */
         if (tg.isVersionAtLeast('8.0')) {
             tg.requestFullscreen();
         }
-
         tg.enableClosingConfirmation();
         tg.disableVerticalSwipes();
-
-        /* Блокировка ориентации — Bot API 8.0+ */
         if (tg.isVersionAtLeast('8.0')) {
             tg.lockOrientation();
         }
     }
-
-    /* ═══════════════════════════════════════════════════════════════
-     * 2. HAPTIC FEEDBACK HELPER
-     * ═══════════════════════════════════════════════════════════════
-     *
-     * Telegram HapticFeedback API:
-     *
-     *   impactOccurred(style)
-     *     'light'   — лёгкое касание (навигация, выбор элемента)
-     *     'medium'  — среднее (toggle, выбор станции)
-     *     'heavy'   — тяжёлое (важное действие)
-     *     'rigid'   — жёсткое (ошибка, отказ)
-     *     'soft'    — мягкое
-     *
-     *   notificationOccurred(type)
-     *     'success' — успешное завершение
-     *     'warning' — предупреждение
-     *     'error'   — ошибка
-     *
-     *   selectionChanged()
-     *     — смена выбора в списке (скролл пикера и т.п.)
-     * ═══════════════════════════════════════════════════════════════ */
     const haptic = {
         impact(style = 'light') {
             try { tg?.HapticFeedback?.impactOccurred(style); } catch (e) {}
@@ -708,22 +577,9 @@
         }
     };
 
-    /* ═══════════════════════════════════════════════════════════════
-     * 3. VIEWPORT HEIGHT — применяем к .app
-     * ═══════════════════════════════════════════════════════════════
-     *
-     * Telegram предоставляет CSS-переменные автоматически, но нам нужно
-     * обновлять высоту .app при изменении вьюпорта (например, клавиатура).
-     * Используем stable-height для layout, чтобы не прыгать.
-     * ═══════════════════════════════════════════════════════════════ */
     const appEl = document.getElementById('app');
 
     function applyViewportHeight() {
-        /*
-         * viewportStableHeight доступен через tg.viewportStableHeight (число px).
-         * CSS-переменная --tg-viewport-stable-height тоже должна выставляться
-         * Telegram автоматически, но для надёжности дублируем через JS.
-         */
         if (tg) {
             const stableH = tg.viewportStableHeight;
             if (stableH && stableH > 0) {
@@ -736,8 +592,6 @@
             }
         }
     }
-
-    /* Слушаем изменения вьюпорта (появление клавиатуры и т.п.) */
     if (tg) {
         tg.onEvent('viewportChanged', ({ isStateStable }) => {
             applyViewportHeight();
@@ -746,22 +600,10 @@
 
     applyViewportHeight();
 
-    /* ═══════════════════════════════════════════════════════════════
-     * 4. SAFE AREA — применяем значения из tg к CSS-переменным
-     * ═══════════════════════════════════════════════════════════════
-     *
-     * Telegram выставляет CSS-переменные автоматически начиная с
-     * Bot API 7.x, но для совместимости с более старыми версиями
-     * дублируем через JS из JS-объектов.
-     *
-     * safeAreaInset      — физические края экрана
-     * contentSafeAreaInset — края контентной зоны внутри Telegram UI
-     * ═══════════════════════════════════════════════════════════════ */
     function applySafeAreaInsets() {
         if (!tg) return;
         const root = document.documentElement;
 
-        /* safeAreaInset — физический экран (notch, home bar) */
         const sa = tg.safeAreaInset;
         if (sa) {
             root.style.setProperty('--tg-safe-area-inset-top',    (sa.top    ?? 0) + 'px');
@@ -770,7 +612,6 @@
             root.style.setProperty('--tg-safe-area-inset-right',  (sa.right  ?? 0) + 'px');
         }
 
-        /* contentSafeAreaInset — контентная зона (шапка Telegram, кнопки) */
         const csa = tg.contentSafeAreaInset;
         if (csa) {
             root.style.setProperty('--tg-content-safe-area-inset-top',    (csa.top    ?? 0) + 'px');
@@ -782,15 +623,11 @@
 
     applySafeAreaInsets();
 
-    /* Safe area может обновиться после ready/expand/fullscreen */
     if (tg) {
         tg.onEvent('safeAreaChanged', applySafeAreaInsets);
         tg.onEvent('contentSafeAreaChanged', applySafeAreaInsets);
     }
 
-    /* ═══════════════════════════════════════════════════════════════
-     * 5. LOADING SCREEN
-     * ═══════════════════════════════════════════════════════════════ */
     const loadingScreen    = document.getElementById('loadingScreen');
     const loaderProgress   = document.getElementById('loaderProgress');
     const loaderProgressText = document.getElementById('loaderProgressText');
@@ -812,9 +649,6 @@
     setTimeout(() => setLoadProgress(30, 'Загрузка ресурсов...'), 300);
     setTimeout(() => setLoadProgress(55, 'Подключение к серверу...'), 700);
 
-    /* ═══════════════════════════════════════════════════════════════
-     * 6. APP STATE
-     * ═══════════════════════════════════════════════════════════════ */
     const audio               = document.getElementById('audioPlayer');
     const playBtn             = document.getElementById('playBtn');
     const statusText          = document.getElementById('statusText');
@@ -843,7 +677,6 @@
 
     audio.volume = 1.0;
 
-    /* ── Back Button ── */
     const backButton = tg?.BackButton;
     if (backButton) {
         backButton.onClick(() => {
@@ -852,9 +685,6 @@
         });
     }
 
-    /* ═══════════════════════════════════════════════════════════════
-     * 7. FAVORITES — localStorage
-     * ═══════════════════════════════════════════════════════════════ */
     function loadFavoritesFromStorage() {
         try {
             const stored = localStorage.getItem('webradio_favorites');
@@ -878,28 +708,22 @@
                 tags: station.tags || '',
                 favicon: station.favicon || ''
             });
-            haptic.impact('medium'); /* Добавлено в избранное */
+            haptic.impact('medium');
         } else {
             favorites.splice(index, 1);
-            haptic.impact('light'); /* Убрано из избранного */
+            haptic.impact('light');
         }
         saveFavoritesToStorage();
         if (activeTab === 'favorites') renderFavorites();
         else if (activeTab === 'radio') renderRadioList();
     }
 
-    /* ═══════════════════════════════════════════════════════════════
-     * 8. STATUS
-     * ═══════════════════════════════════════════════════════════════ */
     function setStatus(text, icon = 'circle', spin = false) {
         statusText.textContent = text;
         statusIcon.textContent = icon;
         statusIcon.style.animation = spin ? 'spin 1s linear infinite' : '';
     }
 
-    /* ═══════════════════════════════════════════════════════════════
-     * 9. HTML HELPERS
-     * ═══════════════════════════════════════════════════════════════ */
     function escapeHtml(text) {
         if (!text) return '';
         return String(text)
@@ -918,9 +742,6 @@
             </div>`;
     }
 
-    /* ═══════════════════════════════════════════════════════════════
-     * 10. RENDER
-     * ═══════════════════════════════════════════════════════════════ */
     function renderRadioList() {
         if (!stations.length && !isLoading) {
             dynamicContent.innerHTML = `<div class="loading-placeholder"><i class="material-icons">search_off</i> Ничего не найдено</div>`;
@@ -1035,9 +856,6 @@
             </div>`;
     }
 
-    /* ═══════════════════════════════════════════════════════════════
-     * 11. STATION SELECTION & PLAYBACK
-     * ═══════════════════════════════════════════════════════════════ */
     function selectStation(url, name, favicon) {
         if (!url) return;
         selectedStation = { url_resolved: url, name, favicon: favicon || '' };
@@ -1096,9 +914,6 @@
         }
     }
 
-    /* ═══════════════════════════════════════════════════════════════
-     * 12. FETCH STATIONS
-     * ═══════════════════════════════════════════════════════════════ */
     async function fetchStations(reset = false, query = '') {
         if (isLoading) return;
         if (!hasMore && !reset) return;
@@ -1184,9 +999,6 @@
         }
     }
 
-    /* ═══════════════════════════════════════════════════════════════
-     * 13. TAB SWITCHING
-     * ═══════════════════════════════════════════════════════════════ */
     function switchTab(tabId) {
         activeTab = tabId;
         navItems.forEach(item => item.classList.toggle('active', item.dataset.tab === tabId));
@@ -1210,9 +1022,6 @@
         }
     }
 
-    /* ═══════════════════════════════════════════════════════════════
-     * 14. SCROLL
-     * ═══════════════════════════════════════════════════════════════ */
     function handleContentScroll() {
         toggleScrollToTopButton();
         if (activeTab !== 'radio') return;
@@ -1226,13 +1035,8 @@
         scrollToTopBtn.classList.toggle('visible', dynamicContent.scrollTop > 300);
     }
 
-    /* ═══════════════════════════════════════════════════════════════
-     * 15. INIT
-     * ═══════════════════════════════════════════════════════════════ */
     function init() {
         loadFavoritesFromStorage();
-
-        /* Восстанавливаем последнюю станцию */
         const lastUrl    = localStorage.getItem('webradio_last_url');
         const lastName   = localStorage.getItem('webradio_last_name');
         const lastFavicon = localStorage.getItem('webradio_last_favicon') || '';
@@ -1241,8 +1045,6 @@
             currentStationNameEl.textContent = lastName || 'Станция';
             audio.src = lastUrl;
         }
-
-        /* Nav */
         navRadio.addEventListener('click', () => {
             haptic.impact('light');
             switchTab('radio');
@@ -1258,10 +1060,8 @@
 
         switchTab('radio');
 
-        /* Scroll */
         dynamicContent.addEventListener('scroll', handleContentScroll);
 
-        /* Search */
         let searchTimeout;
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.trim();
@@ -1272,20 +1072,17 @@
             }, 500);
         });
 
-        /* Player */
         playBtn.addEventListener('click', togglePlay);
 
-        /* Scroll to top */
         scrollToTopBtn.addEventListener('click', () => {
             haptic.impact('light');
             dynamicContent.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
-        /* Audio events */
         audio.addEventListener('playing', () => {
             updatePlayButton(true);
             setStatus('Играет', 'volume_up');
-            haptic.notification('success'); /* Воспроизведение началось */
+            haptic.notification('success');
         });
         audio.addEventListener('pause', () => {
             updatePlayButton(false);
@@ -1297,10 +1094,9 @@
         audio.addEventListener('error', () => {
             setStatus('Ошибка потока', 'error');
             updatePlayButton(false);
-            haptic.notification('error'); /* Ошибка потока */
+            haptic.notification('error');
         });
     }
-
     init();
 })();
 </script>
