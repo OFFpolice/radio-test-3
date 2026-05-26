@@ -641,7 +641,7 @@
         setLoadProgress(100, 'Готово!');
         setTimeout(() => {
             loadingScreen.classList.add('hidden');
-            haptic.notification('success'); /* Вибрация: загрузка завершена */
+            haptic.notification('success');
         }, 400);
     }
 
@@ -824,7 +824,7 @@
                 const url = card.dataset.url;
                 const name = card.dataset.name;
                 const station = stationList.find(s => s.url_resolved === url);
-                haptic.impact('medium'); /* Выбор станции */
+                haptic.impact('medium');
                 selectStation(url, name, station?.favicon || '');
             });
         });
@@ -903,13 +903,13 @@
                 audio.src = selectedStation.url_resolved;
                 audio.load();
             }
-            haptic.impact('medium'); /* Play */
+            haptic.impact('medium');
             audio.play().catch(() => {
                 setStatus('Ошибка', 'error');
                 haptic.notification('error');
             });
         } else {
-            haptic.impact('light'); /* Pause */
+            haptic.impact('light');
             audio.pause();
         }
     }
@@ -925,7 +925,6 @@
             hasMore = true;
             stations = [];
         } else {
-            /* Добавляем индикатор подгрузки если ещё нет */
             const indicator = document.getElementById('load-more-indicator');
             if (!indicator) {
                 const list = document.getElementById('stationsList');
