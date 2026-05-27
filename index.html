@@ -15,33 +15,103 @@
             margin: 0;
             padding: 0;
         }
-        :root {
-            --tg-safe-area-inset-top: 0px;
-            --tg-safe-area-inset-bottom: 0px;
-            --tg-safe-area-inset-left: 0px;
-            --tg-safe-area-inset-right: 0px;
-
-            --tg-content-safe-area-inset-top: 0px;
-            --tg-content-safe-area-inset-bottom: 0px;
-            --tg-content-safe-area-inset-left: 0px;
-            --tg-content-safe-area-inset-right: 0px;
-
-            --tg-viewport-height: 100vh;
-            --tg-viewport-stable-height: 100vh;
-        }
-        html, body {
-            overflow: hidden;
-            height: 100%;
-            width: 100%;
-            background: #0e0e0e;
+        html {
+            -webkit-user-select: none;
+            user-select: none;
         }
         body {
             font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #121212;
             color: #ffffff;
             line-height: 1.5;
             -webkit-tap-highlight-color: transparent;
-            overscroll-behavior: none;
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
         }
+
+        /* ─── Safe Area Borders (from demo) ─────────────────────────── */
+        .safe-area-border {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            pointer-events: none;
+            padding:
+                env(safe-area-inset-top)
+                env(safe-area-inset-right)
+                env(safe-area-inset-bottom)
+                env(safe-area-inset-left);
+        }
+
+        .tg-safe-area-border {
+            position: fixed;
+            left: var(--tg-safe-area-inset-left, 0px);
+            right: var(--tg-safe-area-inset-right, 0px);
+            top: var(--tg-safe-area-inset-top, 0px);
+            bottom: var(--tg-safe-area-inset-bottom, 0px);
+            pointer-events: none;
+        }
+
+        .tg-content-safe-area-border {
+            position: absolute;
+            left: var(--tg-content-safe-area-inset-left, 0px);
+            right: var(--tg-content-safe-area-inset-right, 0px);
+            top: var(--tg-content-safe-area-inset-top, 0px);
+            bottom: var(--tg-content-safe-area-inset-bottom, 0px);
+            pointer-events: none;
+        }
+
+        /* ─── Viewport Borders (from demo) ──────────────────────────── */
+        .viewport-border,
+        .viewport-stable_border {
+            position: fixed;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: var(--tg-viewport-height, 100vh);
+            pointer-events: none;
+            z-index: 9998;
+            display: none; /* hidden by default; enable for debug */
+        }
+        .viewport-stable_border {
+            height: var(--tg-viewport-stable-height, 100vh);
+        }
+        .viewport-border:before,
+        .viewport-stable_border:before {
+            content: attr(text);
+            display: inline-block;
+            position: absolute;
+            background: gray;
+            right: 0;
+            top: 0;
+            font-size: 7px;
+            padding: 2px 4px;
+            vertical-align: top;
+        }
+        .viewport-stable_border:before {
+            background: green;
+            left: 0;
+            right: auto;
+        }
+        .viewport-border:after,
+        .viewport-stable_border:after {
+            content: '';
+            display: block;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            border: 2px dashed gray;
+        }
+        .viewport-stable_border:after {
+            border-color: green;
+        }
+        /* ─────────────────────────────────────────────────────────────── */
+
         #loadingScreen {
             position: fixed;
             inset: 0;
@@ -53,16 +123,13 @@
             justify-content: center;
             gap: 0;
             transition: opacity 0.5s ease, visibility 0.5s ease;
-            padding-top: var(--tg-safe-area-inset-top);
-            padding-bottom: var(--tg-safe-area-inset-bottom);
-            padding-left: var(--tg-safe-area-inset-left);
-            padding-right: var(--tg-safe-area-inset-right);
         }
         #loadingScreen.hidden {
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
         }
+
         .loader-logo {
             position: relative;
             width: 96px;
@@ -109,6 +176,7 @@
             0% { opacity: 1; transform: scale(1); }
             100% { opacity: 0; transform: scale(1.5); }
         }
+
         .loader-title {
             font-size: 26px;
             font-weight: 800;
@@ -126,6 +194,7 @@
             margin-bottom: 40px;
             letter-spacing: 0.3px;
         }
+
         .loader-equalizer {
             display: flex;
             align-items: flex-end;
@@ -150,6 +219,7 @@
             0%, 100% { height: 5px; }
             50% { height: var(--h, 20px); }
         }
+
         .loader-progress-wrap {
             width: 200px;
             height: 3px;
@@ -172,21 +242,24 @@
             font-weight: 600;
             letter-spacing: 0.5px;
         }
+
         .app {
             max-width: 500px;
             margin: 0 auto;
-            height: var(--tg-viewport-stable-height, 100dvh);
+            /* Use stable viewport height so the layout doesn't jump when
+               the on-screen keyboard appears / disappears              */
+            height: var(--tg-viewport-stable-height, 100vh);
             display: flex;
             flex-direction: column;
             background: #121212;
             position: relative;
-            padding-left: var(--tg-safe-area-inset-left);
-            padding-right: var(--tg-safe-area-inset-right);
         }
+
         .app-header {
-            padding-top: calc(var(--tg-content-safe-area-inset-top) + 8px);
-            padding-left: calc(var(--tg-content-safe-area-inset-left) + 16px);
-            padding-right: calc(var(--tg-content-safe-area-inset-right) + 16px);
+            /* Respect Telegram content-safe-area top inset */
+            padding-top: calc(var(--tg-content-safe-area-inset-top, 0px) + 0px);
+            padding-left: calc(var(--tg-content-safe-area-inset-left, 0px) + 16px);
+            padding-right: calc(var(--tg-content-safe-area-inset-right, 0px) + 16px);
             padding-bottom: 8px;
             background: #1e1e1e;
             border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -213,7 +286,10 @@
             align-items: center;
             border: 1px solid rgba(255,255,255,0.08);
         }
-        .search-wrapper i { color: #9e9e9e; margin-right: 8px; }
+        .search-wrapper i {
+            color: #9e9e9e;
+            margin-right: 8px;
+        }
         .search-wrapper input {
             background: transparent;
             border: none;
@@ -224,23 +300,170 @@
             width: 100%;
             padding: 12px 0;
         }
-        .search-wrapper input::placeholder { color: #9e9e9e; }
+        .search-wrapper input::placeholder {
+            color: #9e9e9e;
+        }
         .content {
             flex: 1;
             overflow-y: auto;
-            overflow-x: hidden;
-            padding: 8px calc(var(--tg-content-safe-area-inset-right) + 12px) 12px calc(var(--tg-content-safe-area-inset-left) + 12px);
+            padding: 8px 12px 12px;
             scroll-behavior: smooth;
-            overscroll-behavior: contain;
-            -webkit-overflow-scrolling: touch;
         }
-        .content::-webkit-scrollbar { width: 4px; }
-        .content::-webkit-scrollbar-thumb { background: #c2185b; border-radius: 4px; }
+        .stations-section {
+            margin-bottom: 8px;
+        }
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #e0e0e0;
+            font-size: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .section-title i {
+            color: #c2185b;
+            font-size: 20px;
+        }
+
+        .station-card {
+            display: flex;
+            align-items: flex-start;
+            padding: 10px 12px 10px 10px;
+            background: #1e1e1e;
+            border-radius: 16px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255,255,255,0.03);
+            transition: background 0.2s, transform 0.1s;
+            cursor: pointer;
+        }
+        .station-card:active {
+            background: #2c2c2c;
+            transform: scale(0.99);
+        }
+        .station-card.active {
+            background: rgba(194, 24, 91, 0.15);
+            border-left: 4px solid #c2185b;
+            border-radius: 16px 8px 8px 16px;
+        }
+
+        .station-cover {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            background: #2c2c2c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        .station-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+            display: block;
+            transition: opacity 0.3s ease;
+        }
+        .station-cover img.loading { opacity: 0; }
+        .station-cover img.loaded  { opacity: 1; }
+        .station-cover .cover-fallback {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .station-cover .cover-fallback i {
+            font-size: 28px;
+            color: #c2185b;
+        }
+        .station-card.active .station-cover::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            border: 2px solid rgba(233,30,99,0.6);
+            animation: coverPulse 1.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes coverPulse {
+            0%, 100% { border-color: rgba(233,30,99,0.6); }
+            50% { border-color: rgba(233,30,99,0.2); }
+        }
+
+        .station-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .station-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: #ffffff;
+            margin-bottom: 4px;
+            line-height: 1.3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .station-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            color: #b0b0b0;
+            font-size: 12px;
+        }
+        .tag {
+            background: #2c2c2c;
+            color: #b0b0b0;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .station-card.active .tag {
+            background: #3a2a33;
+            color: #e0b0c0;
+        }
+        .favorite-btn {
+            background: transparent;
+            border: none;
+            color: #9e9e9e;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            margin-left: 8px;
+            flex-shrink: 0;
+            align-self: flex-start;
+        }
+        .favorite-btn i { font-size: 22px; }
+        .favorite-btn.active { color: #e91e63; }
+        .favorite-btn:active {
+            background: rgba(255,255,255,0.08);
+            transform: scale(0.9);
+        }
+        .loading-placeholder {
+            padding: 24px;
+            text-align: center;
+            color: #9e9e9e;
+        }
+
         .player-bar {
-            padding-top: 8px;
-            padding-bottom: 8px;
-            padding-left: calc(var(--tg-content-safe-area-inset-left) + 12px);
-            padding-right: calc(var(--tg-content-safe-area-inset-right) + 12px);
+            padding: 8px 12px;
             background: #1e1e1e;
             border-top: 1px solid rgba(255,255,255,0.08);
             border-bottom: 1px solid rgba(255,255,255,0.03);
@@ -249,15 +472,53 @@
             align-items: center;
             gap: 12px;
         }
+
+        .play-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            background: #c2185b;
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 8px rgba(194,24,91,0.3);
+            flex-shrink: 0;
+        }
+        .play-btn i { font-size: 24px; }
+        .play-btn:active {
+            transform: scale(0.92);
+            box-shadow: 0 2px 4px rgba(194,24,91,0.4);
+        }
+        .now-playing-text {
+            flex: 1;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #fff;
+        }
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #b0b0b0;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        .status-badge i { font-size: 16px; }
+
         .bottom-nav {
             display: flex;
             align-items: center;
             justify-content: space-around;
             background: #1a1a1a;
-            padding-top: 6px;
-            padding-bottom: calc(var(--tg-content-safe-area-inset-bottom) + var(--tg-safe-area-inset-bottom) + 6px);
-            padding-left: calc(var(--tg-content-safe-area-inset-left) + 8px);
-            padding-right: calc(var(--tg-content-safe-area-inset-right) + 8px);
+            /* Respect Telegram content-safe-area bottom inset */
+            padding: 6px 8px calc(var(--tg-content-safe-area-inset-bottom, 0px) + 6px);
             border-top: 1px solid rgba(255,255,255,0.05);
             flex-shrink: 0;
         }
@@ -284,185 +545,38 @@
             color: #e91e63;
             background: rgba(233, 30, 99, 0.1);
         }
-        .stations-section { margin-bottom: 8px; }
-        .section-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
-            font-weight: 600;
-            color: #e0e0e0;
-            font-size: 15px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .section-title i { color: #c2185b; font-size: 20px; }
-        .station-card {
-            display: flex;
-            align-items: flex-start;
-            padding: 10px 12px 10px 10px;
-            background: #1e1e1e;
-            border-radius: 16px;
-            margin-bottom: 8px;
-            border: 1px solid rgba(255,255,255,0.03);
-            transition: background 0.2s, transform 0.1s;
-            cursor: pointer;
-        }
-        .station-card:active {
-            background: #2c2c2c;
-            transform: scale(0.99);
-        }
-        .station-card.active {
-            background: rgba(194, 24, 91, 0.15);
-            border-left: 4px solid #c2185b;
-            border-radius: 16px 8px 8px 16px;
-        }
-        .station-cover {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
-            background: #2c2c2c;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 12px;
-            flex-shrink: 0;
-            overflow: hidden;
-            position: relative;
-        }
-        .station-cover img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 12px;
-            display: block;
-            transition: opacity 0.3s ease;
-        }
-        .station-cover img.loading { opacity: 0; }
-        .station-cover img.loaded { opacity: 1; }
-        .station-cover .cover-fallback {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            z-index: 0;
-            pointer-events: none;
-        }
-        .station-cover .cover-fallback i { font-size: 28px; color: #c2185b; }
-        .station-card.active .station-cover::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 12px;
-            border: 2px solid rgba(233,30,99,0.6);
-            animation: coverPulse 1.5s ease-in-out infinite;
-            pointer-events: none;
-        }
-        @keyframes coverPulse {
-            0%, 100% { border-color: rgba(233,30,99,0.6); }
-            50% { border-color: rgba(233,30,99,0.2); }
-        }
-        .station-info { flex: 1; min-width: 0; }
-        .station-name {
-            font-weight: 600;
-            font-size: 15px;
-            color: #ffffff;
-            margin-bottom: 4px;
-            line-height: 1.3;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .station-tags { display: flex; flex-wrap: wrap; gap: 4px; color: #b0b0b0; font-size: 12px; }
-        .tag {
-            background: #2c2c2c;
-            color: #b0b0b0;
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        .station-card.active .tag { background: #3a2a33; color: #e0b0c0; }
-        .favorite-btn {
-            background: transparent;
-            border: none;
-            color: #9e9e9e;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.15s;
-            margin-left: 8px;
-            flex-shrink: 0;
-            align-self: flex-start;
-        }
-        .favorite-btn i { font-size: 22px; }
-        .favorite-btn.active { color: #e91e63; }
-        .favorite-btn:active { background: rgba(255,255,255,0.08); transform: scale(0.9); }
-        .play-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 20px;
-            background: #c2185b;
-            border: none;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 4px 8px rgba(194,24,91,0.3);
-            flex-shrink: 0;
-        }
-        .play-btn i { font-size: 24px; }
-        .play-btn:active { transform: scale(0.92); box-shadow: 0 2px 4px rgba(194,24,91,0.4); }
-        .now-playing-text {
-            flex: 1;
-            font-weight: 600;
-            font-size: 14px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: #fff;
-        }
-        .status-badge {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            color: #b0b0b0;
-            font-size: 12px;
-            flex-shrink: 0;
-        }
-        .status-badge i { font-size: 16px; }
-        .loading-placeholder {
-            padding: 24px;
+
+        .about-container {
+            padding: 24px 16px;
             text-align: center;
-            color: #9e9e9e;
         }
-        .about-container { padding: 24px 16px; text-align: center; }
-        .about-icon { font-size: 64px; color: #c2185b; margin-bottom: 16px; }
-        .about-title { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
-        .about-text { color: #ccc; margin-bottom: 20px; }
+        .about-icon {
+            font-size: 64px;
+            color: #c2185b;
+            margin-bottom: 16px;
+        }
+        .about-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .about-text {
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+
+        .content::-webkit-scrollbar { width: 4px; }
+        .content::-webkit-scrollbar-thumb { background: #c2185b; border-radius: 4px; }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
         .scroll-to-top {
             position: fixed;
-            bottom: calc(
-                57px
-                + 52px
-                + var(--tg-content-safe-area-inset-bottom)
-                + var(--tg-safe-area-inset-bottom)
-                + 12px
-            );
-            right: calc(var(--tg-safe-area-inset-right) + var(--tg-content-safe-area-inset-right) + 16px);
+            bottom: calc(130px + var(--tg-content-safe-area-inset-bottom, 0px));
+            right: max(20px, calc(20px + var(--tg-content-safe-area-inset-right, 0px)));
             width: 48px;
             height: 48px;
             border-radius: 24px;
@@ -485,6 +599,7 @@
     </style>
 </head>
 <body>
+
 <div id="loadingScreen">
     <div class="loader-logo">
         <div class="loader-logo-ring2"></div>
@@ -508,6 +623,7 @@
     </div>
     <div class="loader-progress-text" id="loaderProgressText">Подключение...</div>
 </div>
+
 <div class="app" id="app">
     <header class="app-header" id="appHeader">
         <h1>WebRadioBot</h1>
@@ -516,7 +632,9 @@
             <input type="text" id="searchInput" placeholder="Поиск станций..." autocomplete="off">
         </div>
     </header>
+
     <div class="content" id="dynamicContent"></div>
+
     <div class="player-bar" id="playerBar">
         <button class="play-btn" id="playBtn">
             <i class="material-icons">play_arrow</i>
@@ -527,6 +645,7 @@
             <span id="statusText">Ожидание</span>
         </div>
     </div>
+
     <div class="bottom-nav" id="bottomNav">
         <button class="nav-item active" data-tab="radio" id="navRadio">
             <i class="material-icons">radio</i>
@@ -542,94 +661,86 @@
         </button>
     </div>
 </div>
+
+<!-- Safe-area overlay divs (from demo app) -->
+<div class="safe-area-border"></div>
+<div class="tg-safe-area-border">
+    <div class="tg-content-safe-area-border"></div>
+</div>
+<!-- Viewport border helpers (hidden by default; set display:block for debug) -->
+<div class="viewport-border"></div>
+<div class="viewport-stable_border"></div>
+
 <button class="scroll-to-top" id="scrollToTopBtn" title="Наверх">
     <i class="material-icons">arrow_upward</i>
 </button>
+
 <audio id="audioPlayer"></audio>
 
 <script>
-(function () {
+(function() {
     "use strict";
 
     const tg = window.Telegram?.WebApp;
-
     if (tg) {
         tg.ready();
         tg.expand();
-        if (tg.isVersionAtLeast('8.0')) {
-            tg.requestFullscreen();
-        }
+        if (tg.isVersionAtLeast("8.0")) tg.requestFullscreen();
         tg.enableClosingConfirmation();
         tg.disableVerticalSwipes();
-        if (tg.isVersionAtLeast('8.0')) {
-            tg.lockOrientation();
-        }
+        tg.lockOrientation();
     }
-    const haptic = {
-        impact(style = 'light') {
-            try { tg?.HapticFeedback?.impactOccurred(style); } catch (e) {}
-        },
-        notification(type = 'success') {
-            try { tg?.HapticFeedback?.notificationOccurred(type); } catch (e) {}
-        },
-        selection() {
-            try { tg?.HapticFeedback?.selectionChanged(); } catch (e) {}
-        }
-    };
 
-    const appEl = document.getElementById('app');
+    // ─── Viewport helpers (ported from demo app) ──────────────────────────────
+    function round(val, d) {
+        const k = Math.pow(10, d || 0);
+        return Math.round(val * k) / k;
+    }
 
-    function applyViewportHeight() {
+    /**
+     * Updates the debug viewport-border labels and, crucially,
+     * keeps the .app height in sync with the stable viewport height
+     * so the layout never jumps when a keyboard opens.
+     */
+    function setViewportData() {
+        const vbEl  = document.querySelector('.viewport-border');
+        const vsbEl = document.querySelector('.viewport-stable_border');
+
         if (tg) {
-            const stableH = tg.viewportStableHeight;
-            if (stableH && stableH > 0) {
-                appEl.style.height = stableH + 'px';
-                document.documentElement.style.setProperty('--tg-viewport-stable-height', stableH + 'px');
+            const vh  = round(tg.viewportHeight,       2);
+            const vsh = round(tg.viewportStableHeight, 2);
+
+            vbEl  && vbEl .setAttribute('text', window.innerWidth + ' x ' + vh);
+            vsbEl && vsbEl.setAttribute('text',
+                window.innerWidth + ' x ' + vsh +
+                ' | is_expanded: ' + (tg.isExpanded ? 'true' : 'false'));
+
+            // Apply stable height to the app shell so it doesn't resize
+            // when the on-screen keyboard appears
+            const appEl = document.getElementById('app');
+            if (appEl && vsh > 0) {
+                appEl.style.height = vsh + 'px';
             }
-            const currentH = tg.viewportHeight;
-            if (currentH && currentH > 0) {
-                document.documentElement.style.setProperty('--tg-viewport-height', currentH + 'px');
-            }
+        } else {
+            // Fallback when running outside Telegram (browser preview)
+            const wh = window.innerHeight;
+            vbEl  && vbEl .setAttribute('text', window.innerWidth + ' x ' + wh);
+            vsbEl && vsbEl.setAttribute('text', window.innerWidth + ' x ' + wh);
         }
     }
+
+    // Listen for viewport changes (keyboard show/hide, expand/collapse)
     if (tg) {
-        tg.onEvent('viewportChanged', ({ isStateStable }) => {
-            applyViewportHeight();
-        });
+        tg.onEvent('viewportChanged', setViewportData);
     }
+    // Also react to plain browser resize (useful in dev / desktop preview)
+    window.addEventListener('resize', setViewportData);
+    // Initial call
+    setViewportData();
+    // ──────────────────────────────────────────────────────────────────────────
 
-    applyViewportHeight();
-
-    function applySafeAreaInsets() {
-        if (!tg) return;
-        const root = document.documentElement;
-
-        const sa = tg.safeAreaInset;
-        if (sa) {
-            root.style.setProperty('--tg-safe-area-inset-top',    (sa.top    ?? 0) + 'px');
-            root.style.setProperty('--tg-safe-area-inset-bottom', (sa.bottom ?? 0) + 'px');
-            root.style.setProperty('--tg-safe-area-inset-left',   (sa.left   ?? 0) + 'px');
-            root.style.setProperty('--tg-safe-area-inset-right',  (sa.right  ?? 0) + 'px');
-        }
-
-        const csa = tg.contentSafeAreaInset;
-        if (csa) {
-            root.style.setProperty('--tg-content-safe-area-inset-top',    (csa.top    ?? 0) + 'px');
-            root.style.setProperty('--tg-content-safe-area-inset-bottom', (csa.bottom ?? 0) + 'px');
-            root.style.setProperty('--tg-content-safe-area-inset-left',   (csa.left   ?? 0) + 'px');
-            root.style.setProperty('--tg-content-safe-area-inset-right',  (csa.right  ?? 0) + 'px');
-        }
-    }
-
-    applySafeAreaInsets();
-
-    if (tg) {
-        tg.onEvent('safeAreaChanged', applySafeAreaInsets);
-        tg.onEvent('contentSafeAreaChanged', applySafeAreaInsets);
-    }
-
-    const loadingScreen    = document.getElementById('loadingScreen');
-    const loaderProgress   = document.getElementById('loaderProgress');
+    const loadingScreen      = document.getElementById('loadingScreen');
+    const loaderProgress     = document.getElementById('loaderProgress');
     const loaderProgressText = document.getElementById('loaderProgressText');
 
     function setLoadProgress(pct, text) {
@@ -639,25 +750,22 @@
 
     function hideLoadingScreen() {
         setLoadProgress(100, 'Готово!');
-        setTimeout(() => {
-            loadingScreen.classList.add('hidden');
-            haptic.notification('success');
-        }, 400);
+        setTimeout(() => loadingScreen.classList.add('hidden'), 400);
     }
 
     setLoadProgress(10, 'Инициализация...');
-    setTimeout(() => setLoadProgress(30, 'Загрузка ресурсов...'), 300);
+    setTimeout(() => setLoadProgress(30, 'Загрузка ресурсов...'),   300);
     setTimeout(() => setLoadProgress(55, 'Подключение к серверу...'), 700);
 
-    const audio               = document.getElementById('audioPlayer');
-    const playBtn             = document.getElementById('playBtn');
-    const statusText          = document.getElementById('statusText');
-    const statusIcon          = document.getElementById('statusIcon');
+    const audio                = document.getElementById('audioPlayer');
+    const playBtn              = document.getElementById('playBtn');
+    const statusText           = document.getElementById('statusText');
+    const statusIcon           = document.getElementById('statusIcon');
     const currentStationNameEl = document.getElementById('currentStationName');
-    const searchInput         = document.getElementById('searchInput');
-    const searchWrapper       = document.getElementById('searchWrapper');
-    const dynamicContent      = document.getElementById('dynamicContent');
-    const scrollToTopBtn      = document.getElementById('scrollToTopBtn');
+    const searchInput          = document.getElementById('searchInput');
+    const searchWrapper        = document.getElementById('searchWrapper');
+    const dynamicContent       = document.getElementById('dynamicContent');
+    const scrollToTopBtn       = document.getElementById('scrollToTopBtn');
 
     const navRadio     = document.getElementById('navRadio');
     const navFavorites = document.getElementById('navFavorites');
@@ -680,7 +788,6 @@
     const backButton = tg?.BackButton;
     if (backButton) {
         backButton.onClick(() => {
-            haptic.impact('light');
             if (activeTab !== 'radio') switchTab('radio');
         });
     }
@@ -703,19 +810,17 @@
         const index = favorites.findIndex(fav => fav.url_resolved === station.url_resolved);
         if (index === -1) {
             favorites.push({
-                name: station.name,
+                name:         station.name,
                 url_resolved: station.url_resolved,
-                tags: station.tags || '',
-                favicon: station.favicon || ''
+                tags:         station.tags    || '',
+                favicon:      station.favicon || ''
             });
-            haptic.impact('medium');
         } else {
             favorites.splice(index, 1);
-            haptic.impact('light');
         }
         saveFavoritesToStorage();
-        if (activeTab === 'favorites') renderFavorites();
-        else if (activeTab === 'radio') renderRadioList();
+        if      (activeTab === 'favorites') renderFavorites();
+        else if (activeTab === 'radio')     renderRadioList();
     }
 
     function setStatus(text, icon = 'circle', spin = false) {
@@ -750,12 +855,10 @@
         let html = `<div class="stations-section"><div class="section-title"><i class="material-icons">radio</i><span>Все радиостанции</span></div><div id="stationsList">`;
 
         stations.forEach(station => {
-            const isActive = selectedStation && selectedStation.url_resolved === station.url_resolved;
+            const isActive  = selectedStation && selectedStation.url_resolved === station.url_resolved;
             const favActive = isFavorite(station);
-            const tags = station.tags ? station.tags.split(',').slice(0, 3).map(t => t.trim()) : [];
-            const tagHtml = tags.length
-                ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')
-                : '<span class="tag">radio</span>';
+            const tags      = station.tags ? station.tags.split(',').slice(0,3).map(t => t.trim()) : [];
+            const tagHtml   = tags.length ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('') : '<span class="tag">radio</span>';
 
             html += `
                 <div class="station-card ${isActive ? 'active' : ''}" data-url="${escapeHtml(station.url_resolved)}" data-name="${escapeHtml(station.name)}">
@@ -791,10 +894,8 @@
 
         favorites.forEach(station => {
             const isActive = selectedStation && selectedStation.url_resolved === station.url_resolved;
-            const tags = station.tags ? station.tags.split(',').slice(0, 3).map(t => t.trim()) : [];
-            const tagHtml = tags.length
-                ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')
-                : '<span class="tag">radio</span>';
+            const tags     = station.tags ? station.tags.split(',').slice(0,3).map(t => t.trim()) : [];
+            const tagHtml  = tags.length ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('') : '<span class="tag">radio</span>';
 
             html += `
                 <div class="station-card ${isActive ? 'active' : ''}" data-url="${escapeHtml(station.url_resolved)}" data-name="${escapeHtml(station.name)}">
@@ -821,22 +922,20 @@
         document.querySelectorAll('.station-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.favorite-btn')) return;
-                const url = card.dataset.url;
-                const name = card.dataset.name;
+                const url     = card.dataset.url;
+                const name    = card.dataset.name;
                 const station = stationList.find(s => s.url_resolved === url);
-                haptic.impact('medium');
                 selectStation(url, name, station?.favicon || '');
             });
         });
-
         document.querySelectorAll('.favorite-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const station = {
                     url_resolved: btn.dataset.url,
-                    name: btn.dataset.name,
-                    tags: btn.dataset.tags,
-                    favicon: btn.dataset.favicon
+                    name:         btn.dataset.name,
+                    tags:         btn.dataset.tags,
+                    favicon:      btn.dataset.favicon
                 };
                 toggleFavorite(station);
                 const isFav = isFavorite(station);
@@ -852,7 +951,7 @@
                 <i class="material-icons about-icon">radio</i>
                 <div class="about-title">WebRadioBot</div>
                 <div class="about-text">Слушайте тысячи радиостанций со всего мира. Добавляйте любимые в избранное.</div>
-                <div class="about-text" style="font-size:13px; opacity:0.7;">Version: 0.0.1 · Telegram Mini App</div>
+                <div class="about-text" style="font-size:13px; opacity:0.7;">Version: 0.0.2 · Telegram Mini App</div>
             </div>`;
     }
 
@@ -866,8 +965,8 @@
             if (card.dataset.url === url) card.classList.add('active');
         });
 
-        localStorage.setItem('webradio_last_url', url);
-        localStorage.setItem('webradio_last_name', name);
+        localStorage.setItem('webradio_last_url',     url);
+        localStorage.setItem('webradio_last_name',    name);
         localStorage.setItem('webradio_last_favicon', favicon || '');
 
         const wasPlaying = !audio.paused;
@@ -876,10 +975,7 @@
         audio.load();
 
         if (wasPlaying) {
-            audio.play().catch(() => {
-                setStatus('Ошибка воспроизведения', 'error');
-                haptic.notification('error');
-            });
+            audio.play().catch(() => setStatus('Ошибка воспроизведения', 'error'));
         } else {
             setStatus('Готово', 'check_circle');
         }
@@ -892,45 +988,22 @@
             : '<i class="material-icons">play_arrow</i>';
     }
 
-    function togglePlay() {
-        if (!selectedStation) {
-            setStatus('Выберите станцию', 'info');
-            haptic.notification('warning');
-            return;
-        }
-        if (audio.paused) {
-            if (audio.src !== selectedStation.url_resolved) {
-                audio.src = selectedStation.url_resolved;
-                audio.load();
-            }
-            haptic.impact('medium');
-            audio.play().catch(() => {
-                setStatus('Ошибка', 'error');
-                haptic.notification('error');
-            });
-        } else {
-            haptic.impact('light');
-            audio.pause();
-        }
-    }
-
     async function fetchStations(reset = false, query = '') {
         if (isLoading) return;
         if (!hasMore && !reset) return;
 
         isLoading = true;
-
         if (reset) {
             currentOffset = 0;
-            hasMore = true;
-            stations = [];
+            hasMore       = true;
+            stations      = [];
         } else {
             const indicator = document.getElementById('load-more-indicator');
             if (!indicator) {
                 const list = document.getElementById('stationsList');
                 if (list) {
                     const loader = document.createElement('div');
-                    loader.id = 'load-more-indicator';
+                    loader.id        = 'load-more-indicator';
                     loader.className = 'loading-placeholder';
                     loader.innerHTML = '<i class="material-icons">sync</i> Загрузка...';
                     list.appendChild(loader);
@@ -941,48 +1014,39 @@
         try {
             setLoadProgress(70, 'Получение списка серверов...');
             const serverRes = await fetch('https://all.api.radio-browser.info/json/servers');
-            const servers = await serverRes.json();
-            const randomServer = servers[Math.floor(Math.random() * servers.length)];
-            currentServer = `https://${randomServer.name}`;
+            const servers   = await serverRes.json();
+            const random    = servers[Math.floor(Math.random() * servers.length)];
+            currentServer   = `https://${random.name}`;
 
             setLoadProgress(85, 'Загрузка станций...');
-            let url;
-            if (query.trim()) {
-                url = `${currentServer}/json/stations/search?name=${encodeURIComponent(query)}&limit=${LIMIT}&offset=${currentOffset}`;
-            } else {
-                url = `${currentServer}/json/stations/search?limit=${LIMIT}&offset=${currentOffset}&order=votes&reverse=true`;
-            }
+            const url = query.trim()
+                ? `${currentServer}/json/stations/search?name=${encodeURIComponent(query)}&limit=${LIMIT}&offset=${currentOffset}`
+                : `${currentServer}/json/stations/search?limit=${LIMIT}&offset=${currentOffset}&order=votes&reverse=true`;
 
-            const res = await fetch(url);
-            const data = await res.json();
+            const res           = await fetch(url);
+            const data          = await res.json();
             const validStations = data.filter(s => s.url_resolved && s.name);
 
             if (reset) stations = validStations;
-            else stations = [...stations, ...validStations];
+            else       stations = [...stations, ...validStations];
 
             currentOffset += validStations.length;
-            hasMore = validStations.length === LIMIT;
+            hasMore        = validStations.length === LIMIT;
 
             if (activeTab === 'radio') renderRadioList();
 
             if (reset && stations.length) {
-                const savedUrl    = localStorage.getItem('webradio_last_url');
-                const savedName   = localStorage.getItem('webradio_last_name');
+                const savedUrl     = localStorage.getItem('webradio_last_url');
+                const savedName    = localStorage.getItem('webradio_last_name');
                 const savedFavicon = localStorage.getItem('webradio_last_favicon') || '';
-                if (savedUrl) {
-                    selectStation(savedUrl, savedName || 'Станция', savedFavicon);
-                } else {
-                    selectStation(stations[0].url_resolved, stations[0].name, stations[0].favicon || '');
-                }
+                if (savedUrl) selectStation(savedUrl, savedName || 'Станция', savedFavicon);
+                else          selectStation(stations[0].url_resolved, stations[0].name, stations[0].favicon || '');
             }
 
             setStatus(`Загружено: ${stations.length}`, 'check_circle');
             if (!hasMore && stations.length) setStatus('Все станции загружены', 'done_all');
 
-            if (reset) {
-                setLoadProgress(100, 'Готово!');
-                hideLoadingScreen();
-            }
+            if (reset) { setLoadProgress(100, 'Готово!'); hideLoadingScreen(); }
         } catch (err) {
             console.error(err);
             if (reset) {
@@ -990,7 +1054,6 @@
                 hideLoadingScreen();
             }
             setStatus('Ошибка сети', 'error');
-            haptic.notification('error');
         } finally {
             isLoading = false;
             const loader = document.getElementById('load-more-indicator');
@@ -1008,8 +1071,8 @@
             else renderRadioList();
         } else {
             searchWrapper.style.display = 'none';
-            if (tabId === 'favorites') renderFavorites();
-            else if (tabId === 'about') renderAbout();
+            if      (tabId === 'favorites') renderFavorites();
+            else if (tabId === 'about')     renderAbout();
         }
 
         dynamicContent.scrollTop = 0;
@@ -1017,7 +1080,7 @@
 
         if (backButton) {
             if (tabId === 'radio') backButton.hide();
-            else backButton.show();
+            else                   backButton.show();
         }
     }
 
@@ -1034,28 +1097,34 @@
         scrollToTopBtn.classList.toggle('visible', dynamicContent.scrollTop > 300);
     }
 
+    function togglePlay() {
+        if (!selectedStation) { setStatus('Выберите станцию', 'info'); return; }
+        if (audio.paused) {
+            if (audio.src !== selectedStation.url_resolved) {
+                audio.src = selectedStation.url_resolved;
+                audio.load();
+            }
+            audio.play().catch(() => setStatus('Ошибка', 'error'));
+        } else {
+            audio.pause();
+        }
+    }
+
     function init() {
         loadFavoritesFromStorage();
-        const lastUrl    = localStorage.getItem('webradio_last_url');
-        const lastName   = localStorage.getItem('webradio_last_name');
+
+        const lastUrl     = localStorage.getItem('webradio_last_url');
+        const lastName    = localStorage.getItem('webradio_last_name');
         const lastFavicon = localStorage.getItem('webradio_last_favicon') || '';
         if (lastUrl) {
             selectedStation = { url_resolved: lastUrl, name: lastName || 'Станция', favicon: lastFavicon };
             currentStationNameEl.textContent = lastName || 'Станция';
             audio.src = lastUrl;
         }
-        navRadio.addEventListener('click', () => {
-            haptic.impact('light');
-            switchTab('radio');
-        });
-        navFavorites.addEventListener('click', () => {
-            haptic.impact('light');
-            switchTab('favorites');
-        });
-        navAbout.addEventListener('click', () => {
-            haptic.impact('light');
-            switchTab('about');
-        });
+
+        navRadio    .addEventListener('click', () => switchTab('radio'));
+        navFavorites.addEventListener('click', () => switchTab('favorites'));
+        navAbout    .addEventListener('click', () => switchTab('about'));
 
         switchTab('radio');
 
@@ -1071,31 +1140,15 @@
             }, 500);
         });
 
-        playBtn.addEventListener('click', togglePlay);
+        playBtn       .addEventListener('click', togglePlay);
+        scrollToTopBtn.addEventListener('click', () => dynamicContent.scrollTo({ top: 0, behavior: 'smooth' }));
 
-        scrollToTopBtn.addEventListener('click', () => {
-            haptic.impact('light');
-            dynamicContent.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        audio.addEventListener('playing', () => {
-            updatePlayButton(true);
-            setStatus('Играет', 'volume_up');
-            haptic.notification('success');
-        });
-        audio.addEventListener('pause', () => {
-            updatePlayButton(false);
-            setStatus('Пауза', 'pause_circle');
-        });
-        audio.addEventListener('waiting', () => {
-            setStatus('Буферизация...', 'sync', true);
-        });
-        audio.addEventListener('error', () => {
-            setStatus('Ошибка потока', 'error');
-            updatePlayButton(false);
-            haptic.notification('error');
-        });
+        audio.addEventListener('playing', () => { updatePlayButton(true);  setStatus('Играет',          'volume_up'); });
+        audio.addEventListener('pause',   () => { updatePlayButton(false); setStatus('Пауза',           'pause_circle'); });
+        audio.addEventListener('waiting', () =>                             setStatus('Буферизация...',  'sync', true));
+        audio.addEventListener('error',   () => { setStatus('Ошибка потока', 'error'); updatePlayButton(false); });
     }
+
     init();
 })();
 </script>
