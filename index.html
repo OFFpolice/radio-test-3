@@ -31,87 +31,6 @@
             padding: 0;
         }
 
-        /* ─── Safe Area Borders (from demo) ─────────────────────────── */
-        .safe-area-border {
-            position: fixed;
-            left: 0;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            pointer-events: none;
-            padding:
-                env(safe-area-inset-top)
-                env(safe-area-inset-right)
-                env(safe-area-inset-bottom)
-                env(safe-area-inset-left);
-        }
-
-        .tg-safe-area-border {
-            position: fixed;
-            left: var(--tg-safe-area-inset-left, 0px);
-            right: var(--tg-safe-area-inset-right, 0px);
-            top: var(--tg-safe-area-inset-top, 0px);
-            bottom: var(--tg-safe-area-inset-bottom, 0px);
-            pointer-events: none;
-        }
-
-        .tg-content-safe-area-border {
-            position: absolute;
-            left: var(--tg-content-safe-area-inset-left, 0px);
-            right: var(--tg-content-safe-area-inset-right, 0px);
-            top: var(--tg-content-safe-area-inset-top, 0px);
-            bottom: var(--tg-content-safe-area-inset-bottom, 0px);
-            pointer-events: none;
-        }
-
-        /* ─── Viewport Borders (from demo) ──────────────────────────── */
-        .viewport-border,
-        .viewport-stable_border {
-            position: fixed;
-            left: 0;
-            right: 0;
-            top: 0;
-            height: var(--tg-viewport-height, 100vh);
-            pointer-events: none;
-            z-index: 9998;
-            display: none; /* hidden by default; enable for debug */
-        }
-        .viewport-stable_border {
-            height: var(--tg-viewport-stable-height, 100vh);
-        }
-        .viewport-border:before,
-        .viewport-stable_border:before {
-            content: attr(text);
-            display: inline-block;
-            position: absolute;
-            background: gray;
-            right: 0;
-            top: 0;
-            font-size: 7px;
-            padding: 2px 4px;
-            vertical-align: top;
-        }
-        .viewport-stable_border:before {
-            background: green;
-            left: 0;
-            right: auto;
-        }
-        .viewport-border:after,
-        .viewport-stable_border:after {
-            content: '';
-            display: block;
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            border: 2px dashed gray;
-        }
-        .viewport-stable_border:after {
-            border-color: green;
-        }
-        /* ─────────────────────────────────────────────────────────────── */
-
         #loadingScreen {
             position: fixed;
             inset: 0;
@@ -246,20 +165,17 @@
         .app {
             max-width: 500px;
             margin: 0 auto;
-            /* Use stable viewport height so the layout doesn't jump when
-               the on-screen keyboard appears / disappears              */
-            height: var(--tg-viewport-stable-height, 100vh);
+            height: 100vh;
+            height: 100dvh;
             display: flex;
             flex-direction: column;
             background: #121212;
             position: relative;
         }
-
         .app-header {
-            /* Respect Telegram content-safe-area top inset */
-            padding-top: calc(var(--tg-content-safe-area-inset-top, 0px) + 0px);
-            padding-left: calc(var(--tg-content-safe-area-inset-left, 0px) + 16px);
-            padding-right: calc(var(--tg-content-safe-area-inset-right, 0px) + 16px);
+            padding-top: calc(var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px));
+            padding-left: calc(var(--tg-safe-area-inset-left, 0px) + 16px);
+            padding-right: calc(var(--tg-safe-area-inset-right, 0px) + 16px);
             padding-bottom: 8px;
             background: #1e1e1e;
             border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -370,8 +286,12 @@
             display: block;
             transition: opacity 0.3s ease;
         }
-        .station-cover img.loading { opacity: 0; }
-        .station-cover img.loaded  { opacity: 1; }
+        .station-cover img.loading {
+            opacity: 0;
+        }
+        .station-cover img.loaded {
+            opacity: 1;
+        }
         .station-cover .cover-fallback {
             position: absolute;
             inset: 0;
@@ -386,6 +306,7 @@
             font-size: 28px;
             color: #c2185b;
         }
+
         .station-card.active .station-cover::after {
             content: '';
             position: absolute;
@@ -450,8 +371,12 @@
             flex-shrink: 0;
             align-self: flex-start;
         }
-        .favorite-btn i { font-size: 22px; }
-        .favorite-btn.active { color: #e91e63; }
+        .favorite-btn i {
+            font-size: 22px;
+        }
+        .favorite-btn.active {
+            color: #e91e63;
+        }
         .favorite-btn:active {
             background: rgba(255,255,255,0.08);
             transform: scale(0.9);
@@ -488,7 +413,9 @@
             box-shadow: 0 4px 8px rgba(194,24,91,0.3);
             flex-shrink: 0;
         }
-        .play-btn i { font-size: 24px; }
+        .play-btn i {
+            font-size: 24px;
+        }
         .play-btn:active {
             transform: scale(0.92);
             box-shadow: 0 2px 4px rgba(194,24,91,0.4);
@@ -510,15 +437,16 @@
             font-size: 12px;
             flex-shrink: 0;
         }
-        .status-badge i { font-size: 16px; }
+        .status-badge i {
+            font-size: 16px;
+        }
 
         .bottom-nav {
             display: flex;
             align-items: center;
             justify-content: space-around;
             background: #1a1a1a;
-            /* Respect Telegram content-safe-area bottom inset */
-            padding: 6px 8px calc(var(--tg-content-safe-area-inset-bottom, 0px) + 6px);
+            padding: 6px 8px calc(var(--tg-safe-area-inset-bottom, 0px) + 6px);
             border-top: 1px solid rgba(255,255,255,0.05);
             flex-shrink: 0;
         }
@@ -575,8 +503,8 @@
 
         .scroll-to-top {
             position: fixed;
-            bottom: calc(130px + var(--tg-content-safe-area-inset-bottom, 0px));
-            right: max(20px, calc(20px + var(--tg-content-safe-area-inset-right, 0px)));
+            bottom: calc(130px + var(--tg-safe-area-inset-bottom, 0px));
+            right: max(20px, calc(var(--tg-safe-area-inset-right, 0px) + 20px));
             width: 48px;
             height: 48px;
             border-radius: 24px;
@@ -662,15 +590,6 @@
     </div>
 </div>
 
-<!-- Safe-area overlay divs (from demo app) -->
-<div class="safe-area-border"></div>
-<div class="tg-safe-area-border">
-    <div class="tg-content-safe-area-border"></div>
-</div>
-<!-- Viewport border helpers (hidden by default; set display:block for debug) -->
-<div class="viewport-border"></div>
-<div class="viewport-stable_border"></div>
-
 <button class="scroll-to-top" id="scrollToTopBtn" title="Наверх">
     <i class="material-icons">arrow_upward</i>
 </button>
@@ -691,97 +610,54 @@
         tg.lockOrientation();
     }
 
-    // ─── Viewport helpers (ported from demo app) ──────────────────────────────
-    function round(val, d) {
-        const k = Math.pow(10, d || 0);
-        return Math.round(val * k) / k;
-    }
-
-    /**
-     * Updates the debug viewport-border labels and, crucially,
-     * keeps the .app height in sync with the stable viewport height
-     * so the layout never jumps when a keyboard opens.
-     */
-    function setViewportData() {
-        const vbEl  = document.querySelector('.viewport-border');
-        const vsbEl = document.querySelector('.viewport-stable_border');
-
-        if (tg) {
-            const vh  = round(tg.viewportHeight,       2);
-            const vsh = round(tg.viewportStableHeight, 2);
-
-            vbEl  && vbEl .setAttribute('text', window.innerWidth + ' x ' + vh);
-            vsbEl && vsbEl.setAttribute('text',
-                window.innerWidth + ' x ' + vsh +
-                ' | is_expanded: ' + (tg.isExpanded ? 'true' : 'false'));
-
-            // Apply stable height to the app shell so it doesn't resize
-            // when the on-screen keyboard appears
-            const appEl = document.getElementById('app');
-            if (appEl && vsh > 0) {
-                appEl.style.height = vsh + 'px';
-            }
-        } else {
-            // Fallback when running outside Telegram (browser preview)
-            const wh = window.innerHeight;
-            vbEl  && vbEl .setAttribute('text', window.innerWidth + ' x ' + wh);
-            vsbEl && vsbEl.setAttribute('text', window.innerWidth + ' x ' + wh);
-        }
-    }
-
-    // Listen for viewport changes (keyboard show/hide, expand/collapse)
-    if (tg) {
-        tg.onEvent('viewportChanged', setViewportData);
-    }
-    // Also react to plain browser resize (useful in dev / desktop preview)
-    window.addEventListener('resize', setViewportData);
-    // Initial call
-    setViewportData();
-    // ──────────────────────────────────────────────────────────────────────────
-
-    const loadingScreen      = document.getElementById('loadingScreen');
-    const loaderProgress     = document.getElementById('loaderProgress');
+    const loadingScreen = document.getElementById('loadingScreen');
+    const loaderProgress = document.getElementById('loaderProgress');
     const loaderProgressText = document.getElementById('loaderProgressText');
+    let loadProgress = 0;
 
     function setLoadProgress(pct, text) {
+        loadProgress = pct;
         loaderProgress.style.width = pct + '%';
         if (text) loaderProgressText.textContent = text;
     }
 
     function hideLoadingScreen() {
         setLoadProgress(100, 'Готово!');
-        setTimeout(() => loadingScreen.classList.add('hidden'), 400);
+        setTimeout(() => {
+            loadingScreen.classList.add('hidden');
+        }, 400);
     }
 
     setLoadProgress(10, 'Инициализация...');
-    setTimeout(() => setLoadProgress(30, 'Загрузка ресурсов...'),   300);
+    setTimeout(() => setLoadProgress(30, 'Загрузка ресурсов...'), 300);
     setTimeout(() => setLoadProgress(55, 'Подключение к серверу...'), 700);
 
-    const audio                = document.getElementById('audioPlayer');
-    const playBtn              = document.getElementById('playBtn');
-    const statusText           = document.getElementById('statusText');
-    const statusIcon           = document.getElementById('statusIcon');
+    const audio = document.getElementById('audioPlayer');
+    const playBtn = document.getElementById('playBtn');
+    const statusText = document.getElementById('statusText');
+    const statusIcon = document.getElementById('statusIcon');
     const currentStationNameEl = document.getElementById('currentStationName');
-    const searchInput          = document.getElementById('searchInput');
-    const searchWrapper        = document.getElementById('searchWrapper');
-    const dynamicContent       = document.getElementById('dynamicContent');
-    const scrollToTopBtn       = document.getElementById('scrollToTopBtn');
+    const searchInput = document.getElementById('searchInput');
+    const searchWrapper = document.getElementById('searchWrapper');
+    const dynamicContent = document.getElementById('dynamicContent');
+    const bottomNav = document.getElementById('bottomNav');
+    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 
-    const navRadio     = document.getElementById('navRadio');
+    const navRadio = document.getElementById('navRadio');
     const navFavorites = document.getElementById('navFavorites');
-    const navAbout     = document.getElementById('navAbout');
-    const navItems     = [navRadio, navFavorites, navAbout];
+    const navAbout = document.getElementById('navAbout');
+    const navItems = [navRadio, navFavorites, navAbout];
 
-    let stations           = [];
-    let selectedStation    = null;
-    let currentServer      = 'https://de1.api.radio-browser.info';
-    let isLoading          = false;
-    let hasMore            = true;
-    let currentOffset      = 0;
-    const LIMIT            = 100;
+    let stations = [];
+    let selectedStation = null;
+    let currentServer = 'https://de1.api.radio-browser.info';
+    let isLoading = false;
+    let hasMore = true;
+    let currentOffset = 0;
+    const LIMIT = 100;
     let currentSearchQuery = '';
-    let activeTab          = 'radio';
-    let favorites          = [];
+    let activeTab = 'radio';
+    let favorites = [];
 
     audio.volume = 1.0;
 
@@ -810,17 +686,17 @@
         const index = favorites.findIndex(fav => fav.url_resolved === station.url_resolved);
         if (index === -1) {
             favorites.push({
-                name:         station.name,
+                name: station.name,
                 url_resolved: station.url_resolved,
-                tags:         station.tags    || '',
-                favicon:      station.favicon || ''
+                tags: station.tags || '',
+                favicon: station.favicon || ''
             });
         } else {
             favorites.splice(index, 1);
         }
         saveFavoritesToStorage();
-        if      (activeTab === 'favorites') renderFavorites();
-        else if (activeTab === 'radio')     renderRadioList();
+        if (activeTab === 'favorites') renderFavorites();
+        else if (activeTab === 'radio') renderRadioList();
     }
 
     function setStatus(text, icon = 'circle', spin = false) {
@@ -855,10 +731,10 @@
         let html = `<div class="stations-section"><div class="section-title"><i class="material-icons">radio</i><span>Все радиостанции</span></div><div id="stationsList">`;
 
         stations.forEach(station => {
-            const isActive  = selectedStation && selectedStation.url_resolved === station.url_resolved;
+            const isActive = selectedStation && selectedStation.url_resolved === station.url_resolved;
             const favActive = isFavorite(station);
-            const tags      = station.tags ? station.tags.split(',').slice(0,3).map(t => t.trim()) : [];
-            const tagHtml   = tags.length ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('') : '<span class="tag">radio</span>';
+            const tags = station.tags ? station.tags.split(',').slice(0,3).map(t => t.trim()) : [];
+            const tagHtml = tags.length ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('') : '<span class="tag">radio</span>';
 
             html += `
                 <div class="station-card ${isActive ? 'active' : ''}" data-url="${escapeHtml(station.url_resolved)}" data-name="${escapeHtml(station.name)}">
@@ -867,11 +743,7 @@
                         <div class="station-name">${escapeHtml(station.name) || 'Без названия'}</div>
                         <div class="station-tags">${tagHtml}</div>
                     </div>
-                    <button class="favorite-btn ${favActive ? 'active' : ''}"
-                        data-url="${escapeHtml(station.url_resolved)}"
-                        data-name="${escapeHtml(station.name)}"
-                        data-tags="${escapeHtml(station.tags || '')}"
-                        data-favicon="${escapeHtml(station.favicon || '')}">
+                    <button class="favorite-btn ${favActive ? 'active' : ''}" data-url="${escapeHtml(station.url_resolved)}" data-name="${escapeHtml(station.name)}" data-tags="${escapeHtml(station.tags || '')}" data-favicon="${escapeHtml(station.favicon || '')}">
                         <i class="material-icons">${favActive ? 'favorite' : 'favorite_border'}</i>
                     </button>
                 </div>`;
@@ -894,8 +766,8 @@
 
         favorites.forEach(station => {
             const isActive = selectedStation && selectedStation.url_resolved === station.url_resolved;
-            const tags     = station.tags ? station.tags.split(',').slice(0,3).map(t => t.trim()) : [];
-            const tagHtml  = tags.length ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('') : '<span class="tag">radio</span>';
+            const tags = station.tags ? station.tags.split(',').slice(0,3).map(t => t.trim()) : [];
+            const tagHtml = tags.length ? tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('') : '<span class="tag">radio</span>';
 
             html += `
                 <div class="station-card ${isActive ? 'active' : ''}" data-url="${escapeHtml(station.url_resolved)}" data-name="${escapeHtml(station.name)}">
@@ -904,11 +776,7 @@
                         <div class="station-name">${escapeHtml(station.name) || 'Без названия'}</div>
                         <div class="station-tags">${tagHtml}</div>
                     </div>
-                    <button class="favorite-btn active"
-                        data-url="${escapeHtml(station.url_resolved)}"
-                        data-name="${escapeHtml(station.name)}"
-                        data-tags="${escapeHtml(station.tags || '')}"
-                        data-favicon="${escapeHtml(station.favicon || '')}">
+                    <button class="favorite-btn active" data-url="${escapeHtml(station.url_resolved)}" data-name="${escapeHtml(station.name)}" data-tags="${escapeHtml(station.tags || '')}" data-favicon="${escapeHtml(station.favicon || '')}">
                         <i class="material-icons">favorite</i>
                     </button>
                 </div>`;
@@ -922,8 +790,8 @@
         document.querySelectorAll('.station-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.favorite-btn')) return;
-                const url     = card.dataset.url;
-                const name    = card.dataset.name;
+                const url = card.dataset.url;
+                const name = card.dataset.name;
                 const station = stationList.find(s => s.url_resolved === url);
                 selectStation(url, name, station?.favicon || '');
             });
@@ -933,9 +801,9 @@
                 e.stopPropagation();
                 const station = {
                     url_resolved: btn.dataset.url,
-                    name:         btn.dataset.name,
-                    tags:         btn.dataset.tags,
-                    favicon:      btn.dataset.favicon
+                    name: btn.dataset.name,
+                    tags: btn.dataset.tags,
+                    favicon: btn.dataset.favicon
                 };
                 toggleFavorite(station);
                 const isFav = isFavorite(station);
@@ -951,7 +819,7 @@
                 <i class="material-icons about-icon">radio</i>
                 <div class="about-title">WebRadioBot</div>
                 <div class="about-text">Слушайте тысячи радиостанций со всего мира. Добавляйте любимые в избранное.</div>
-                <div class="about-text" style="font-size:13px; opacity:0.7;">Version: 0.0.3 · Telegram Mini App</div>
+                <div class="about-text" style="font-size:13px; opacity:0.7;">Version: 0.0.2 · Telegram Mini App</div>
             </div>`;
     }
 
@@ -965,8 +833,8 @@
             if (card.dataset.url === url) card.classList.add('active');
         });
 
-        localStorage.setItem('webradio_last_url',     url);
-        localStorage.setItem('webradio_last_name',    name);
+        localStorage.setItem('webradio_last_url', url);
+        localStorage.setItem('webradio_last_name', name);
         localStorage.setItem('webradio_last_favicon', favicon || '');
 
         const wasPlaying = !audio.paused;
@@ -995,15 +863,15 @@
         isLoading = true;
         if (reset) {
             currentOffset = 0;
-            hasMore       = true;
-            stations      = [];
+            hasMore = true;
+            stations = [];
         } else {
             const indicator = document.getElementById('load-more-indicator');
             if (!indicator) {
                 const list = document.getElementById('stationsList');
                 if (list) {
                     const loader = document.createElement('div');
-                    loader.id        = 'load-more-indicator';
+                    loader.id = 'load-more-indicator';
                     loader.className = 'loading-placeholder';
                     loader.innerHTML = '<i class="material-icons">sync</i> Загрузка...';
                     list.appendChild(loader);
@@ -1014,39 +882,48 @@
         try {
             setLoadProgress(70, 'Получение списка серверов...');
             const serverRes = await fetch('https://all.api.radio-browser.info/json/servers');
-            const servers   = await serverRes.json();
-            const random    = servers[Math.floor(Math.random() * servers.length)];
-            currentServer   = `https://${random.name}`;
+            const servers = await serverRes.json();
+            const randomServer = servers[Math.floor(Math.random() * servers.length)];
+            currentServer = `https://${randomServer.name}`;
 
             setLoadProgress(85, 'Загрузка станций...');
-            const url = query.trim()
-                ? `${currentServer}/json/stations/search?name=${encodeURIComponent(query)}&limit=${LIMIT}&offset=${currentOffset}`
-                : `${currentServer}/json/stations/search?limit=${LIMIT}&offset=${currentOffset}&order=votes&reverse=true`;
+            let url;
+            if (query.trim()) {
+                url = `${currentServer}/json/stations/search?name=${encodeURIComponent(query)}&limit=${LIMIT}&offset=${currentOffset}`;
+            } else {
+                url = `${currentServer}/json/stations/search?limit=${LIMIT}&offset=${currentOffset}&order=votes&reverse=true`;
+            }
 
-            const res           = await fetch(url);
-            const data          = await res.json();
+            const res = await fetch(url);
+            const data = await res.json();
             const validStations = data.filter(s => s.url_resolved && s.name);
 
             if (reset) stations = validStations;
-            else       stations = [...stations, ...validStations];
+            else stations = [...stations, ...validStations];
 
             currentOffset += validStations.length;
-            hasMore        = validStations.length === LIMIT;
+            hasMore = validStations.length === LIMIT;
 
             if (activeTab === 'radio') renderRadioList();
 
             if (reset && stations.length) {
-                const savedUrl     = localStorage.getItem('webradio_last_url');
-                const savedName    = localStorage.getItem('webradio_last_name');
+                const savedUrl = localStorage.getItem('webradio_last_url');
+                const savedName = localStorage.getItem('webradio_last_name');
                 const savedFavicon = localStorage.getItem('webradio_last_favicon') || '';
-                if (savedUrl) selectStation(savedUrl, savedName || 'Станция', savedFavicon);
-                else          selectStation(stations[0].url_resolved, stations[0].name, stations[0].favicon || '');
+                if (savedUrl) {
+                    selectStation(savedUrl, savedName || 'Станция', savedFavicon);
+                } else {
+                    selectStation(stations[0].url_resolved, stations[0].name, stations[0].favicon || '');
+                }
             }
 
             setStatus(`Загружено: ${stations.length}`, 'check_circle');
             if (!hasMore && stations.length) setStatus('Все станции загружены', 'done_all');
 
-            if (reset) { setLoadProgress(100, 'Готово!'); hideLoadingScreen(); }
+            if (reset) {
+                setLoadProgress(100, 'Готово!');
+                hideLoadingScreen();
+            }
         } catch (err) {
             console.error(err);
             if (reset) {
@@ -1071,8 +948,8 @@
             else renderRadioList();
         } else {
             searchWrapper.style.display = 'none';
-            if      (tabId === 'favorites') renderFavorites();
-            else if (tabId === 'about')     renderAbout();
+            if (tabId === 'favorites') renderFavorites();
+            else if (tabId === 'about') renderAbout();
         }
 
         dynamicContent.scrollTop = 0;
@@ -1080,7 +957,7 @@
 
         if (backButton) {
             if (tabId === 'radio') backButton.hide();
-            else                   backButton.show();
+            else backButton.show();
         }
     }
 
@@ -1113,8 +990,8 @@
     function init() {
         loadFavoritesFromStorage();
 
-        const lastUrl     = localStorage.getItem('webradio_last_url');
-        const lastName    = localStorage.getItem('webradio_last_name');
+        const lastUrl = localStorage.getItem('webradio_last_url');
+        const lastName = localStorage.getItem('webradio_last_name');
         const lastFavicon = localStorage.getItem('webradio_last_favicon') || '';
         if (lastUrl) {
             selectedStation = { url_resolved: lastUrl, name: lastName || 'Станция', favicon: lastFavicon };
@@ -1122,9 +999,9 @@
             audio.src = lastUrl;
         }
 
-        navRadio    .addEventListener('click', () => switchTab('radio'));
+        navRadio.addEventListener('click', () => switchTab('radio'));
         navFavorites.addEventListener('click', () => switchTab('favorites'));
-        navAbout    .addEventListener('click', () => switchTab('about'));
+        navAbout.addEventListener('click', () => switchTab('about'));
 
         switchTab('radio');
 
@@ -1140,13 +1017,13 @@
             }, 500);
         });
 
-        playBtn       .addEventListener('click', togglePlay);
+        playBtn.addEventListener('click', togglePlay);
         scrollToTopBtn.addEventListener('click', () => dynamicContent.scrollTo({ top: 0, behavior: 'smooth' }));
 
-        audio.addEventListener('playing', () => { updatePlayButton(true);  setStatus('Играет',          'volume_up'); });
-        audio.addEventListener('pause',   () => { updatePlayButton(false); setStatus('Пауза',           'pause_circle'); });
-        audio.addEventListener('waiting', () =>                             setStatus('Буферизация...',  'sync', true));
-        audio.addEventListener('error',   () => { setStatus('Ошибка потока', 'error'); updatePlayButton(false); });
+        audio.addEventListener('playing', () => { updatePlayButton(true); setStatus('Играет', 'volume_up'); });
+        audio.addEventListener('pause', () => { updatePlayButton(false); setStatus('Пауза', 'pause_circle'); });
+        audio.addEventListener('waiting', () => setStatus('Буферизация...', 'sync', true));
+        audio.addEventListener('error', () => { setStatus('Ошибка потока', 'error'); updatePlayButton(false); });
     }
 
     init();
