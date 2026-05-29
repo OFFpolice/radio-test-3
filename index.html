@@ -211,75 +211,51 @@
         .nav-item i { font-size: 22px; }
         .nav-item.active { color: #e91e63; background: rgba(233, 30, 99, 0.1); }
 
-        /* ── About ── */
         .about-container { padding: 24px 16px; text-align: center; }
         .about-icon { font-size: 64px; color: #c2185b; margin-bottom: 16px; }
         .about-title { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
         .about-desc { color: #ccc; margin-bottom: 28px; }
 
-        /* Share button */
+        .share-btn-wrap {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
         .share-btn {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
-            width: 100%;
-            max-width: 280px;
-            margin: 0 auto 20px;
-            padding: 15px 24px;
-            border-radius: 18px;
+            gap: 0;
+            padding: 0;
+            border-radius: 20px;
             border: none;
             cursor: pointer;
             font-family: 'Nunito', sans-serif;
-            font-size: 16px;
-            font-weight: 800;
-            letter-spacing: 0.2px;
-            color: #fff;
-            background: linear-gradient(135deg, #c2185b, #e91e63, #f06292);
-            box-shadow: 0 8px 28px rgba(194,24,91,0.45);
-            transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
-            position: relative;
-            overflow: hidden;
+            font-size: 14px;
+            font-weight: 700;
+            color: #aaa;
+            background: transparent;
+            transition: color 0.15s;
         }
-        .share-btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
-            pointer-events: none;
-        }
-        .share-btn i { font-size: 22px; }
-        .share-btn:active {
-            transform: scale(0.96);
-            filter: brightness(0.9);
-            box-shadow: 0 4px 14px rgba(194,24,91,0.35);
-        }
-        /* Pulse ring on share button */
-        .share-btn-wrap {
-            position: relative;
+        .share-btn-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #1e1e1e;
+            border: 1px solid rgba(255,255,255,0.08);
             display: flex;
+            align-items: center;
             justify-content: center;
-            margin-bottom: 28px;
+            margin-right: 10px;
+            flex-shrink: 0;
+            transition: background 0.15s, border-color 0.15s;
         }
-        .share-btn-wrap::before,
-        .share-btn-wrap::after {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            border-radius: 18px;
-            border: 2px solid rgba(233,30,99,0.3);
-            width: 100%; max-width: 280px; height: 100%;
-            animation: sharePulse 2.5s ease-out infinite;
-            pointer-events: none;
-        }
-        .share-btn-wrap::after { animation-delay: 1.25s; }
-        @keyframes sharePulse {
-            0%   { transform: translate(-50%,-50%) scale(1);   opacity: 0.5; }
-            100% { transform: translate(-50%,-50%) scale(1.12); opacity: 0; }
+        .share-btn-icon i { font-size: 20px; color: #e91e63; }
+        .share-btn:active { color: #fff; }
+        .share-btn:active .share-btn-icon {
+            background: #2a2a2a;
+            border-color: rgba(233,30,99,0.35);
         }
 
-        /* Social buttons */
         .social-links { display: flex; flex-direction: column; gap: 12px; max-width: 280px; margin: 0 auto 28px; }
         .social-btn {
             display: flex; align-items: center; gap: 14px;
@@ -305,30 +281,6 @@
         .social-btn-arrow { font-size: 20px; opacity: 0.6; }
 
         .about-version { font-size: 12px; color: #444; font-weight: 600; letter-spacing: 0.5px; }
-
-        /* Share feedback toast */
-        .share-toast {
-            position: fixed;
-            bottom: calc(140px + var(--tg-safe-area-inset-bottom, 0px));
-            left: 50%; transform: translateX(-50%) translateY(16px);
-            background: #2a2a2a;
-            color: #fff;
-            font-family: 'Nunito', sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 10px 20px;
-            border-radius: 24px;
-            border: 1px solid rgba(255,255,255,0.08);
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.25s, transform 0.25s;
-            z-index: 100;
-        }
-        .share-toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
 
         .content::-webkit-scrollbar { width: 4px; }
         .content::-webkit-scrollbar-thumb { background: #c2185b; border-radius: 4px; }
@@ -411,9 +363,6 @@
     </div>
 </div>
 
-<!-- Share feedback toast -->
-<div class="share-toast" id="shareToast"></div>
-
 <button class="scroll-to-top" id="scrollToTopBtn" title="Наверх">
     <i class="material-icons">arrow_upward</i>
 </button>
@@ -460,7 +409,6 @@
     const searchWrapper        = document.getElementById('searchWrapper');
     const dynamicContent       = document.getElementById('dynamicContent');
     const scrollToTopBtn       = document.getElementById('scrollToTopBtn');
-    const shareToast           = document.getElementById('shareToast');
 
     const navRadio     = document.getElementById('navRadio');
     const navFavorites = document.getElementById('navFavorites');
@@ -485,58 +433,13 @@
         backButton.onClick(() => { if (activeTab !== 'radio') switchTab('radio'); });
     }
 
-    // ── Share logic (based on demo sendMessage with inline webview button) ──────
-    let shareToastTimeout = null;
-
-    function showToast(msg, durationMs = 2500) {
-        shareToast.textContent = msg;
-        shareToast.classList.add('show');
-        clearTimeout(shareToastTimeout);
-        shareToastTimeout = setTimeout(() => shareToast.classList.remove('show'), durationMs);
-    }
-
     function shareApp() {
-        // Approach 1: Telegram native share (API 6.1+)
-        // Opens Telegram's built-in share sheet so the user can pick a chat
-        // and the message includes an inline "Open" button (webview button).
-        if (tg && tg.isVersionAtLeast('6.1') && tg.initDataUnsafe?.query_id) {
-            // When query_id is present we can use switchInlineQuery to forward
-            // the bot's inline result which carries the webapp button.
-            try {
-                tg.switchInlineQuery('', ['users', 'groups', 'channels']);
-                return;
-            } catch(e) { /* fall through */ }
-        }
-
-        // Approach 2: shareMessage (Bot API 7.x prepared messages)
-        // If the bot prepared a shareable message_id, use it.
-        // Here we fall back to opening a Telegram share URL with the bot link.
-        if (tg) {
-            try {
-                // Opens Telegram's native forward/share UI with an inline
-                // webview (Open App) button, identical to the demo's
-                // "Send with inline webview button" behaviour.
-                tg.openTelegramLink('https://t.me/share/url?url=https://t.me/Web_radio_bot/app&text=🎵 Слушай радио со всего мира прямо в Telegram!');
-                return;
-            } catch(e) { /* fall through */ }
-        }
-
-        // Approach 3: Web Share API (browser fallback)
-        if (navigator.share) {
-            navigator.share({
-                title: 'WebRadioBot',
-                text:  '🎵 Слушай радио со всего мира прямо в Telegram!',
-                url:   'https://t.me/WebRadioBot'
-            }).catch(() => {});
+        try {
+            tg.openTelegramLink('https://t.me/share/url?url=https://t.me/Web_radio_bot/app&text=🎵 Слушай радио со всего мира прямо в Telegram!');
             return;
-        }
-
-        // Approach 4: Copy link to clipboard
-        navigator.clipboard?.writeText('https://t.me/WebRadioBot')
-            .then(() => showToast('✅ Ссылка скопирована!'))
-            .catch(() => showToast('Поделитесь: t.me/WebRadioBot'));
+        } catch(e) { /* fall through */ }
+        tg.openTelegramLink('https://t.me/Web_radio_bot/app');
     }
-    // ────────────────────────────────────────────────────────────────────────────
 
     function loadFavoritesFromStorage() {
         try { const s = localStorage.getItem('webradio_favorites'); favorites = s ? JSON.parse(s) : []; }
@@ -659,14 +562,6 @@
                 <div class="about-title">WebRadioBot</div>
                 <div class="about-desc">Слушайте тысячи радиостанций со всего мира.<br>Добавляйте любимые в избранное.</div>
 
-                <!-- ── Share button (demo: sendMessage with inline webview button) ── -->
-                <div class="share-btn-wrap">
-                    <button class="share-btn" id="shareAppBtn">
-                        <i class="material-icons">share</i>
-                        Поделиться приложением
-                    </button>
-                </div>
-
                 <div class="social-links">
                     <a class="social-btn tg" href="https://t.me/OFFpolice" target="_blank" rel="noopener">
                         <div class="social-btn-icon">
@@ -700,10 +595,15 @@
                     </a>
                 </div>
 
-                <div class="about-version">Version 0.0.4 · Telegram Mini App</div>
-            </div>`;
+                <div class="share-btn-wrap">
+                    <button class="share-btn" id="shareAppBtn">
+                        <div class="share-btn-icon"><i class="material-icons">ios_share</i></div>
+                        Поделиться приложением
+                    </button>
+                </div>
 
-        // Attach share listener after DOM is rendered
+                <div class="about-version" style="margin-top:16px;">Version 0.0.4 · Telegram Mini App</div>
+            </div>`;
         document.getElementById('shareAppBtn')?.addEventListener('click', shareApp);
     }
 
