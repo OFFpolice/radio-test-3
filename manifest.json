@@ -1,13 +1,13 @@
 {
   "name": "WebRadioBot",
-  "short_name": "Radio",
+  "short_name": "WebRadioBot",
   "description": "Тысячи радиостанций со всего мира",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#121212",
-  "theme_color": "#c2185b",
+  "theme_color": "#121212",
   "lang": "ru",
   "icons": [
     {
